@@ -1,0 +1,2 @@
+rootProject.name = "ssc-ddd"
+

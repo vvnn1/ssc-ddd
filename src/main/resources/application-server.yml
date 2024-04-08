@@ -1,0 +1,6 @@
+spring:
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: ${SSC_MYSQL_URL:jdbc:mysql://localhost:3306/ssc_ddd}
+    username: ${SSC_MYSQL_USERNAME:root}
+    password: ${SSC_MYSQL_PASSWORD:root}
