@@ -12,6 +12,7 @@ repositories {
 }
 
 dependencies {
+    implementation(project(":asset"))
     implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("com.alibaba:druid-spring-boot-starter:1.1.10")
     implementation("mysql:mysql-connector-java:8.0.21")
