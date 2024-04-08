@@ -1,0 +1,75 @@
+@startuml
+!include ../lib_eventstorming.puml
+/'
+1、用户可以上传文件，文件名称格式不正确，需要展示上传进度
+2、只支持字母（大小写）、数字、下划线（_）、横杠（-）、点（.），最大200m，超过100m提示尺寸过大通过oss上传
+3、用户可以删除文件
+'/
+Person('user','用户')
+
+Command('UploadCommand')[
+    上传文件
+    --field--
+    实例id
+    fileName
+    InputStream
+    identifier
+    --rule--
+    显示上传进度
+]
+Command('DeleteCommand')[
+    删除文件
+    --field--
+    句柄id
+    实例id
+]
+
+Aggregate('aggregate')[
+    实例文件
+    --id--
+    实例id
+    --field--
+    refCount
+    path
+    identifier
+    --method--
+    uploadFile
+    deleteFile
+]
+
+DomainEvent('UploadEvent')[
+    文件已上传
+    --field--
+    实例id
+    fileName
+    path
+    identifier
+    createTime
+]
+
+DomainEvent('DeleteEvent')[
+    文件已删除
+    --field--
+    句柄id
+]
+
+ReadModel('FileReadModel')[
+    文件
+    --
+    id
+    实例id
+    fileName
+    path
+    identifier
+    createTime
+]
+
+user-->UploadCommand
+user-->DeleteCommand
+UploadCommand-->aggregate
+DeleteCommand-->aggregate
+aggregate-->UploadEvent
+aggregate-->DeleteEvent
+UploadEvent-->FileReadModel
+
+@enduml
