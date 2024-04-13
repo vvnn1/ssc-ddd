@@ -24,7 +24,7 @@ import java.time.LocalDateTime;
 @Entity
 public class Asset extends AbstractAggregateRoot {
     @EmbeddedId
-    private AssetId id;
+    private AssetID id;
     private Integer refCount;
     private String path;
     private String identifier;

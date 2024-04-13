@@ -1,6 +1,6 @@
 package com.github.vvnn1.domain.pojo;
 
-import com.github.vvnn1.domain.entity.AssetId;
+import com.github.vvnn1.domain.entity.AssetID;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -15,7 +15,7 @@ import java.io.InputStream;
 @Setter
 @ToString
 public class UploadCommand {
-    private AssetId assetId;
+    private AssetID assetId;
     private String fileName;
     private InputStream inputStream;
     private String identifier;

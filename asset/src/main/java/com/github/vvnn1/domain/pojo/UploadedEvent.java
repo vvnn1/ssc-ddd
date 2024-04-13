@@ -1,7 +1,7 @@
 package com.github.vvnn1.domain.pojo;
 
 import com.github.vvnn1.cqrs.DomainEvent;
-import com.github.vvnn1.domain.entity.AssetId;
+import com.github.vvnn1.domain.entity.AssetID;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
@@ -18,7 +18,7 @@ import java.time.LocalDateTime;
 @ToString
 @AllArgsConstructor
 public class UploadedEvent implements DomainEvent {
-    private AssetId id;
+    private AssetID id;
     private String fileName;
     private String path;
     private String identifier;
