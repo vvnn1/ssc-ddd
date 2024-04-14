@@ -1,5 +1,6 @@
 package com.github.vvnn1.domain.entity;
 
+import com.github.vvnn1.domain.pojo.BoxID;
 import com.github.vvnn1.domain.pojo.CreateTicketCommand;
 import com.github.vvnn1.domain.repository.TicketBoxRepository;
 
@@ -12,26 +13,43 @@ import java.util.concurrent.ConcurrentHashMap;
  * @since 2024/4/9 13:26
  */
 public class TicketManager {
-    private final Map<String, TicketBox<?>> ticketBoxMap = new ConcurrentHashMap<>();
+    private final Map<BoxID, TicketBox<?>> ticketBoxMap = new ConcurrentHashMap<>();
     private final TicketBoxRepository ticketBoxRepository;
 
     public TicketManager(TicketBoxRepository ticketBoxRepository) {
         this.ticketBoxRepository = ticketBoxRepository;
     }
 
-    public <T> T getTicket(CreateTicketCommand<T> command){
-        TicketBox<?> ticketBox = ticketBoxMap.compute(command.getModule(), (ignore, box) -> {
-            if (box == null || !box.hasNext()) {
-                return ticketBoxRepository.genTicketBox(command.getModule(), command.getTicketClazz());
+    public <T> T getTicket(CreateTicketCommand<T> command) {
+        TicketBox<?> ticketBox = ticketBoxMap.compute(command.getId(), (ignore, box) -> {
+            if (box != null && box.hasNext()) {
+                return box;
             }
-            return box;
+
+            if (box != null) {
+                ticketBoxRepository.expiry(box);
+            }
+
+            TicketBox<Object> newBox = ticketBoxRepository.get(command.getId());
+            if (newBox != null) {
+                newBox.fill();
+            }
+            return newBox;
         });
 
-        try{
+        if (ticketBox == null) {
+            return null;
+        }
+
+        try {
             Object ticket = ticketBox.next();
             return (T) ticket;
-        }catch (NoSuchElementException e){
+        } catch (NoSuchElementException e) {
             return getTicket(command);
         }
+    }
+
+    public <T> void create(TicketBox<T> ticketBox) {
+        ticketBoxRepository.create(ticketBox);
     }
 }

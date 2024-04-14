@@ -15,6 +15,6 @@ import java.io.Serializable;
 @AllArgsConstructor
 @NoArgsConstructor
 @Embeddable
-public class AssetId implements Serializable {
+public class AssetID implements Serializable {
     private Long id;
 }

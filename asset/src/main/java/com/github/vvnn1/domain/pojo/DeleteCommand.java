@@ -1,6 +1,6 @@
 package com.github.vvnn1.domain.pojo;
 
-import com.github.vvnn1.domain.entity.AssetId;
+import com.github.vvnn1.domain.entity.AssetID;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
@@ -16,5 +16,5 @@ import lombok.ToString;
 @AllArgsConstructor
 public class DeleteCommand {
     private Long id;
-    private AssetId assetId;
+    private AssetID assetId;
 }
