@@ -14,6 +14,5 @@ import lombok.ToString;
 @ToString
 @AllArgsConstructor
 public class CreateTicketCommand<T> {
-    private String module;
-    private Class<T> ticketClazz;
+    private BoxID id;
 }

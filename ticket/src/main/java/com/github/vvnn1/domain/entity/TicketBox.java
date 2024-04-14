@@ -1,10 +1,12 @@
 package com.github.vvnn1.domain.entity;
 
+import com.github.vvnn1.domain.pojo.BoxID;
+import jakarta.persistence.EmbeddedId;
 import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
 import jakarta.persistence.Transient;
 import lombok.*;
 
+import java.time.LocalDateTime;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 import java.util.Queue;
@@ -17,17 +19,27 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 @Getter
 @Setter
 @ToString
-@NoArgsConstructor
-@AllArgsConstructor
 @Entity
 public abstract class TicketBox<T> implements Iterator<T> {
-    @Id
-    private Long id;
+    @EmbeddedId
+    private BoxID id;
     private T currentMaxTicket;
-    private Integer ticketNums;
-    private String module;
+    private Integer ticketNum;
+    private String desc;
+    private LocalDateTime updateTime;
     @Transient
+    @Getter(AccessLevel.NONE)
+    @Setter(AccessLevel.NONE)
     private Queue<T> ticketQueue;
+
+    public TicketBox() {
+    }
+
+    public TicketBox(BoxID id, T currentMaxTicket, Integer ticketNum) {
+        this.id = id;
+        this.currentMaxTicket = currentMaxTicket;
+        this.ticketNum = ticketNum;
+    }
 
     @Override
     public boolean hasNext() {
@@ -36,23 +48,22 @@ public abstract class TicketBox<T> implements Iterator<T> {
 
     @Override
     public T next() {
-        if (ticketQueue == null){
+        if (ticketQueue == null) {
             throw new NullPointerException("ticket未初始化，获取前需先生成");
         }
 
         T ticket = ticketQueue.poll();
-        if (ticket == null){
+        if (ticket == null) {
             throw new NoSuchElementException("无可用ticket");
         }
-
         return ticket;
     }
 
-    public void genTickets() {
+    void fill() {
         if (ticketQueue == null) {
-            this.ticketQueue = genTicket(id, currentMaxTicket, ticketNums, module);
+            this.ticketQueue = genTickets(id, currentMaxTicket, ticketNum);
         }
     }
 
-    protected abstract ConcurrentLinkedQueue<T> genTicket(Long id, T currentMaxTicket, Integer ticketNums, String module);
+    protected abstract ConcurrentLinkedQueue<T> genTickets(BoxID id, T currentMaxTicket, Integer ticketNums);
 }
