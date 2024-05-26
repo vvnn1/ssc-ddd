@@ -14,5 +14,5 @@ import lombok.ToString;
 @ToString
 @AllArgsConstructor
 public class CreateTicketCommand<T> {
-    private BoxID id;
+    private String bizTag;
 }

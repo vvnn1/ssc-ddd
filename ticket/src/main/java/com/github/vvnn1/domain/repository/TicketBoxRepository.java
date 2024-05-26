@@ -10,5 +10,4 @@ import com.github.vvnn1.domain.pojo.BoxID;
 public interface TicketBoxRepository {
     <T> TicketBox<T> get(BoxID id);
     <T> void create(TicketBox<T> ticketBox);
-    <T> void expiry(TicketBox<T> ticketBox);
 }

@@ -1,10 +1,7 @@
 package com.github.vvnn1.domain.pojo;
 
 import jakarta.persistence.Embeddable;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.*;
 
 import java.io.Serializable;
 
@@ -16,6 +13,8 @@ import java.io.Serializable;
 @Setter
 @ToString
 @EqualsAndHashCode
+@AllArgsConstructor
+@NoArgsConstructor
 @Embeddable
 public class BoxID implements Serializable {
     private String bizTag;
