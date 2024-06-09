@@ -4,6 +4,8 @@ import com.github.vvnn1.domain.entity.TicketBox;
 import com.github.vvnn1.domain.pojo.BoxID;
 import com.github.vvnn1.domain.repository.TicketBoxRepository;
 import com.github.vvnn1.domain.util.CyclicQueue;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.util.Map;
 import java.util.Queue;
@@ -15,8 +17,14 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class BoxManager {
     private final Map<BoxID, Queue<TicketBox<?>>> boxContainer;
-    private final int cacheSize;
     private final TicketBoxRepository ticketBoxRepository;
+    @Setter
+    @Getter
+    private int cacheSize;
+
+    public BoxManager(TicketBoxRepository ticketBoxRepository) {
+        this(ticketBoxRepository, 2);
+    }
 
     public BoxManager(TicketBoxRepository ticketBoxRepository, int cacheSize) {
         this.boxContainer = new ConcurrentHashMap<>();
@@ -24,21 +32,17 @@ public class BoxManager {
         this.ticketBoxRepository = ticketBoxRepository;
     }
 
-    public TicketBox<?> get(BoxID id) {
+    protected TicketBox<?> get(BoxID id) {
         Queue<TicketBox<?>> ticketBoxQueue = boxContainer.computeIfAbsent(id, this::createTicketBoxQueue);
 
         if (ticketBoxQueue == null) {
             return null;
         }
 
-        if (ticketBoxQueue.size() != cacheSize) {
-            throw new IllegalStateException("Illegal cache size, Shouldn't arrived here, please issue a bug");
-        }
-
         return ticketBoxQueue.peek();
     }
 
-    public void release(TicketBox<?> box) {
+    protected void release(TicketBox<?> box) {
         boxContainer.computeIfPresent(box.getId(), (id, ticketBoxes) -> {
             if (ticketBoxes.peek() != box) {
                 return ticketBoxes;
@@ -56,10 +60,6 @@ public class BoxManager {
             if (!offer(ticketBoxes, id)) {
                 return null;
             }
-        }
-
-        if (ticketBoxes.size() == 0) {
-            return null;
         }
 
         return ticketBoxes;
