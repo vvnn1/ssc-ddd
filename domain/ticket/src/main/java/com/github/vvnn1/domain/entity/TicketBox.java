@@ -7,6 +7,7 @@ import jakarta.persistence.Transient;
 import lombok.*;
 
 import java.time.LocalDateTime;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 import java.util.Queue;
@@ -30,7 +31,7 @@ public abstract class TicketBox<T> implements Iterator<T> {
     @Transient
     @Getter(AccessLevel.NONE)
     @Setter(AccessLevel.NONE)
-    private Queue<T> ticketQueue;
+    private volatile Queue<T> ticketQueue;
 
     public TicketBox() {
     }
@@ -43,27 +44,24 @@ public abstract class TicketBox<T> implements Iterator<T> {
 
     @Override
     public boolean hasNext() {
-        return ticketQueue != null && ticketQueue.size() > 0;
+        if (ticketQueue == null){
+            synchronized (this){
+                if (ticketQueue == null){
+                    Collection<T> tickets = genTickets(id, currentMaxTicket, ticketNum);
+                    this.ticketQueue = new ConcurrentLinkedQueue<>(tickets);
+                }
+            }
+        }
+        return ticketQueue.size() > 0;
     }
 
     @Override
     public T next() {
-        if (ticketQueue == null) {
-            throw new NullPointerException("ticket未初始化，获取前需先生成");
+        if (ticketQueue == null && !hasNext()) {
+            throw new NoSuchElementException();
         }
-
-        T ticket = ticketQueue.poll();
-        if (ticket == null) {
-            throw new NoSuchElementException("无可用ticket");
-        }
-        return ticket;
+        return ticketQueue.remove();
     }
 
-    void fill() {
-        if (ticketQueue == null) {
-            this.ticketQueue = genTickets(id, currentMaxTicket, ticketNum);
-        }
-    }
-
-    protected abstract ConcurrentLinkedQueue<T> genTickets(BoxID id, T currentMaxTicket, Integer ticketNums);
+    protected abstract Collection<T> genTickets(BoxID id, T currentMaxTicket, Integer ticketNums);
 }
