@@ -11,7 +11,7 @@ repositories {
 }
 
 dependencies {
-    api(project(":common"))
+    api(project(":domain:common"))
     compileOnly("org.projectlombok:lombok:1.18.22")
     compileOnly("jakarta.persistence:jakarta.persistence-api:3.1.0")
     testImplementation("org.junit.jupiter:junit-jupiter-api:5.8.1")
