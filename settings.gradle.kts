@@ -6,3 +6,5 @@ include("ssc-ddd:domain:common")
 findProject(":ssc-ddd:domain:common")?.name = "common"
 include("ssc-ddd:domain:ticket")
 findProject(":ssc-ddd:domain:ticket")?.name = "ticket"
+include("ssc-ddd:domain:directory")
+findProject(":ssc-ddd:domain:directory")?.name = "directory"
