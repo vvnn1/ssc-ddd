@@ -5,8 +5,12 @@ plugins {
 group = "org.example"
 version = "1.0-SNAPSHOT"
 
-repositories {
-    mavenCentral()
+allprojects {
+    repositories {
+        maven {
+            url=uri("https://maven.aliyun.com/nexus/content/groups/public")
+        }
+    }
 }
 
 dependencies {
