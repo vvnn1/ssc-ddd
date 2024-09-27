@@ -6,8 +6,8 @@ import indi.melon.ssc.domain.common.cqrs.DomainException;
  * @author vvnn1
  * @since 2024/9/25 21:07
  */
-public class TreeNodeNotSupportException extends DomainException {
-    public TreeNodeNotSupportException(String message) {
+public class NodeNotSupportException extends DomainException {
+    public NodeNotSupportException(String message) {
         super(message);
     }
 }

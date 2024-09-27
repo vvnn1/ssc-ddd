@@ -8,11 +8,11 @@ import java.io.Serial;
  * @author vvnn1
  * @since 2024/9/23 19:36
  */
-public class TreeNodeAlreadyExistException extends DomainException {
+public class NodeAlreadyExistException extends DomainException {
     @Serial
     private static final long serialVersionUID = -8785443002262770659L;
 
-    public TreeNodeAlreadyExistException(String message) {
+    public NodeAlreadyExistException(String message) {
         super(message);
     }
 }
