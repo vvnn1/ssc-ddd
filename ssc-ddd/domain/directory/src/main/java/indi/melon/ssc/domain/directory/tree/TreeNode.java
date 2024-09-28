@@ -49,7 +49,7 @@ public class TreeNode {
             throw new NodeAlreadyExistException("node " + childNode.name + " already exist.");
         }
 
-        TreeNode parentNode = findParentNode(childNode);
+        TreeNode parentNode = getTreeNode(childNode.parentId);
         if (parentNode == null){
             return false;
         }
@@ -58,21 +58,17 @@ public class TreeNode {
         return true;
     }
 
-    public boolean remove(TreeNode childNode){
+    public boolean remove(NodeID nodeID){
         if (!isRootNode()) {
             throw new NodeNotSupportException("node " + name + " is not root node, it should not delete others.");
         }
 
-        if (childNode.isRootNode()) {
-            throw new IllegalNodeException("node " + childNode.name + " is root node,it should not be deleted");
-        }
-
-        TreeNode parentNode = findParentNode(childNode);
+        TreeNode parentNode = findParentNode(nodeID);
         if (parentNode == null){
             return false;
         }
 
-        return parentNode.deallocate(childNode);
+        return parentNode.deallocate(nodeID);
     }
 
     public boolean exist(TreeNode childNode){
@@ -89,24 +85,10 @@ public class TreeNode {
             }
 
             if (treeNode.childNodeList != null){
-                queue.addAll(treeNode.childNodeList);
+                treeNode.childNodeList.forEach(queue::push);
             }
         }
         return false;
-    }
-
-    private TreeNode getTreeNode(NodeID nodeID){
-        LinkedList<TreeNode> queue = new LinkedList<>(Collections.singleton(this));
-        while (!queue.isEmpty()){
-            TreeNode treeNode = queue.remove();
-            if (Objects.equals(treeNode.id, nodeID)) {
-                return treeNode;
-            }
-            if (treeNode.childNodeList != null){
-                queue.addAll(treeNode.childNodeList);
-            }
-        }
-        return null;
     }
 
     public void rename(NodeID id, String name){
@@ -123,11 +105,53 @@ public class TreeNode {
         childNode.updateTime = LocalDateTime.now();
     }
 
-    private boolean deallocate(TreeNode childNode) {
+
+
+    private TreeNode findParentNode(NodeID nodeID) {
+        Deque<TreeNode> stack = new LinkedList<>(Collections.singleton(this));
+        Deque<TreeNode> result = new LinkedList<>();
+        while (!stack.isEmpty()) {
+            TreeNode treeNode = stack.pop();
+            if (result.peek() != null && !Objects.equals(treeNode.parentId, result.peek().id)) {
+                result.pop();
+            }
+
+            if (Objects.equals(treeNode.id, nodeID)) {
+                return result.peek();
+            }
+
+            if (treeNode.childNodeList == null || treeNode.childNodeList.isEmpty()) {
+                continue;
+            }
+
+            result.push(treeNode);
+            treeNode.childNodeList.forEach(stack::push);
+        }
+
+        return null;
+    }
+
+
+
+    private TreeNode getTreeNode(NodeID nodeID){
+        LinkedList<TreeNode> queue = new LinkedList<>(Collections.singleton(this));
+        while (!queue.isEmpty()){
+            TreeNode treeNode = queue.remove();
+            if (Objects.equals(treeNode.id, nodeID)) {
+                return treeNode;
+            }
+            if (treeNode.childNodeList != null){
+                queue.addAll(treeNode.childNodeList);
+            }
+        }
+        return null;
+    }
+
+    private boolean deallocate(NodeID nodeID) {
         if (childNodeList == null){
             return false;
         }
-        return childNodeList.removeIf(node -> Objects.equals(node.id, childNode.id));
+        return childNodeList.removeIf(node -> Objects.equals(node.id, nodeID));
     }
 
     private void allocate(TreeNode childNode) {
@@ -158,33 +182,6 @@ public class TreeNode {
         return Collections.unmodifiableList(childNodeList);
     }
 
-    private Queue<TreeNode> getPath(TreeNode childNode) {
-        Deque<TreeNode> nodeStack = new LinkedList<>(Collections.singleton(this));
-        Deque<TreeNode> pathStack = new LinkedList<>();
-        while (!nodeStack.isEmpty()){
-            TreeNode treeNode = nodePath.peek();
-            if (treeNode.isSame(childNode)) {
-                return nodePath;
-            }
-
-        }
-    }
-
-    private boolean hasChildNode(TreeNode childNode, Stack<TreeNode> treeNodeStack) {
-        if (this.equals(childNode)){
-            treeNodeStack.push(this);
-            return true;
-        }
-
-        for (TreeNode treeNode : childNodeList) {
-            if (treeNode.hasChildNode(childNode, treeNodeStack)){
-                return true;
-            }
-        }
-
-        return false;
-    }
-
     public void setChildNodeList(List<TreeNode> childNodeList) {
         if (childNodeList == null){
             this.childNodeList = null;
@@ -205,24 +202,6 @@ public class TreeNode {
 
     private boolean isRootNode(){
         return parentId == null;
-    }
-
-    private TreeNode findParentNode(TreeNode childNode){
-        LinkedList<TreeNode> queue = new LinkedList<>(Collections.singleton(this));
-
-        while (!queue.isEmpty()){
-            TreeNode treeNode = queue.remove();
-
-            if (Objects.equals(treeNode.id, childNode.parentId)){
-                return treeNode;
-            }
-
-            if (treeNode.childNodeList != null){
-                queue.addAll(treeNode.childNodeList);
-            }
-        }
-
-        return null;
     }
 
     private boolean isSame(TreeNode treeNode) {

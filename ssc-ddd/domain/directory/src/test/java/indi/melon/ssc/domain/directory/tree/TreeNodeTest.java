@@ -166,20 +166,20 @@ class TreeNodeTest {
     public void should_remove_child_node_if_exist(){
         TreeNode rootNode = buildTree();
 
-        assertFalse(rootNode.remove(buildNode(new NodeID("12"), new NodeID("0"))));
+        assertFalse(rootNode.remove(new NodeID("12")));
 
         assertTrue(rootNode.exist(buildNode(new NodeID("6"), new NodeID("5"))));
-        assertTrue(rootNode.remove(buildNode(new NodeID("6"), new NodeID("5"))));
+        assertTrue(rootNode.remove(new NodeID("6")));
         assertFalse(rootNode.exist(buildNode(new NodeID("6"), new NodeID("5"))));
-        assertFalse(rootNode.remove(buildNode(new NodeID("6"), new NodeID("5"))));
+        assertFalse(rootNode.remove(new NodeID("6")));
 
 
         TreeNode rootNode2 = buildNode(new NodeID("999"), null);
-        assertThrows(IllegalNodeException.class, () -> rootNode.remove(rootNode2));
+        assertFalse(rootNode.remove(rootNode2.getId()));
 
         TreeNode treeNode1 = buildNode(new NodeID("1"), new NodeID("2"));
         TreeNode treeNode2 = buildNode(new NodeID("2"), new NodeID("0"));
-        assertThrows(NodeNotSupportException.class, () -> treeNode2.remove(treeNode1));
+        assertThrows(NodeNotSupportException.class, () -> treeNode2.remove(treeNode1.getId()));
     }
 
     @Test
