@@ -1,8 +1,9 @@
 package indi.melon.ssc.domain.directory.tree;
 
 import indi.melon.ssc.domain.directory.exception.IllegalNodeException;
-import indi.melon.ssc.domain.directory.exception.NodeAlreadyExistException;
-import indi.melon.ssc.domain.directory.exception.NodeNotSupportException;
+import indi.melon.ssc.domain.directory.exception.AlreadyExistException;
+import indi.melon.ssc.domain.directory.exception.NotFoundException;
+import indi.melon.ssc.domain.directory.exception.NotSupportException;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -19,7 +20,7 @@ import java.util.*;
 @Getter
 @Setter
 @ToString
-@Entity(name="TreeNode")
+@Entity(name = "TreeNode")
 public class TreeNode {
     @EmbeddedId
     private NodeID id;
@@ -36,9 +37,9 @@ public class TreeNode {
     @Transient
     private Order order;
 
-    public boolean add(TreeNode childNode){
+    public boolean add(TreeNode childNode) {
         if (!isRootNode()) {
-            throw new NodeNotSupportException("node " + name + " is not root node, it should not add others.");
+            throw new NotSupportException("node " + name + " is not root node, it should not add others.");
         }
 
         if (childNode.isRootNode()) {
@@ -46,11 +47,11 @@ public class TreeNode {
         }
 
         if (exist(childNode)) {
-            throw new NodeAlreadyExistException("node " + childNode.name + " already exist.");
+            throw new AlreadyExistException("node " + childNode.name + " already exist.");
         }
 
-        TreeNode parentNode = getTreeNode(childNode.parentId);
-        if (parentNode == null){
+        TreeNode parentNode = findTreeNode(childNode.parentId);
+        if (parentNode == null) {
             return false;
         }
 
@@ -58,54 +59,93 @@ public class TreeNode {
         return true;
     }
 
-    public boolean remove(NodeID nodeID){
+    public boolean remove(NodeID nodeID) {
         if (!isRootNode()) {
-            throw new NodeNotSupportException("node " + name + " is not root node, it should not delete others.");
+            throw new NotSupportException("node " + name + " is not root node, it should not delete others.");
         }
 
-        TreeNode parentNode = findParentNode(nodeID);
-        if (parentNode == null){
+        TreeNode treeNode = findTreeNode(nodeID);
+        if (treeNode == null) {
+            return false;
+        }
+
+        if (Boolean.TRUE.equals(treeNode.locked)) {
+            throw new NotSupportException("node " + treeNode.name + " is locked, it can be remove.");
+        }
+
+        if (treeNode.parentId == null) {
+            throw new NotSupportException("node " + treeNode.name + " is root node, it can not be remove.");
+        }
+
+        TreeNode parentNode = findTreeNode(treeNode.parentId);
+        if (parentNode == null) {
             return false;
         }
 
         return parentNode.deallocate(nodeID);
     }
 
-    public boolean exist(TreeNode childNode){
+    public boolean exist(TreeNode childNode) {
         if (!isRootNode()) {
-            throw new NodeNotSupportException("node " + name + " is not root node, it should not rename others.");
+            throw new NotSupportException("node " + name + " is not root node, it should not rename others.");
         }
 
         LinkedList<TreeNode> queue = new LinkedList<>(Collections.singleton(this));
-        while (!queue.isEmpty()){
+        while (!queue.isEmpty()) {
             TreeNode treeNode = queue.remove();
 
             if (treeNode.isSame(childNode)) {
                 return true;
             }
 
-            if (treeNode.childNodeList != null){
+            if (treeNode.childNodeList != null) {
                 treeNode.childNodeList.forEach(queue::push);
             }
         }
         return false;
     }
 
-    public void rename(NodeID id, String name){
+    public void rename(NodeID id, String name) {
         if (!isRootNode()) {
-            throw new NodeNotSupportException("node " + name + " is not root node, it should not rename others.");
+            throw new NotSupportException("node " + name + " is not root node, it should not rename others.");
         }
 
-        TreeNode childNode = getTreeNode(id);
-        if (childNode == null){
+        TreeNode treeNode = findTreeNode(id);
+        if (treeNode == null) {
             throw new IllegalNodeException("node " + id + " is not exist.");
         }
 
-        childNode.name = name;
-        childNode.updateTime = LocalDateTime.now();
+        if (Boolean.TRUE.equals(treeNode.locked)) {
+            throw new NotSupportException("node " + treeNode.name + " is locked, it can be rename.");
+        }
+
+        treeNode.name = name;
+        treeNode.updateTime = LocalDateTime.now();
     }
 
+    public boolean isLocked(NodeID nodeID) {
+        TreeNode treeNode = findTreeNode(nodeID);
+        if (treeNode == null) {
+            throw new NotFoundException("node " + nodeID + " is not found.");
+        }
+        return Boolean.TRUE.equals(treeNode.locked);
+    }
 
+    public void locked(NodeID nodeID) {
+        TreeNode treeNode = findTreeNode(nodeID);
+        if (treeNode == null) {
+            throw new NotFoundException("node " + nodeID + " is not found.");
+        }
+        treeNode.locked = true;
+    }
+
+    public void unlocked(NodeID nodeID) {
+        TreeNode treeNode = findTreeNode(nodeID);
+        if (treeNode == null) {
+            throw new NotFoundException("node " + nodeID + " is not found.");
+        }
+        treeNode.locked = false;
+    }
 
     private TreeNode findParentNode(NodeID nodeID) {
         Deque<TreeNode> stack = new LinkedList<>(Collections.singleton(this));
@@ -132,15 +172,14 @@ public class TreeNode {
     }
 
 
-
-    private TreeNode getTreeNode(NodeID nodeID){
+    private TreeNode findTreeNode(NodeID nodeID) {
         LinkedList<TreeNode> queue = new LinkedList<>(Collections.singleton(this));
-        while (!queue.isEmpty()){
+        while (!queue.isEmpty()) {
             TreeNode treeNode = queue.remove();
             if (Objects.equals(treeNode.id, nodeID)) {
                 return treeNode;
             }
-            if (treeNode.childNodeList != null){
+            if (treeNode.childNodeList != null) {
                 queue.addAll(treeNode.childNodeList);
             }
         }
@@ -148,30 +187,30 @@ public class TreeNode {
     }
 
     private boolean deallocate(NodeID nodeID) {
-        if (childNodeList == null){
+        if (childNodeList == null) {
             return false;
         }
         return childNodeList.removeIf(node -> Objects.equals(node.id, nodeID));
     }
 
     private void allocate(TreeNode childNode) {
-        if (!Boolean.TRUE.equals(expandable)){
-            throw new NodeNotSupportException("node " + name + " is not expandable, it can not add " + childNode.name + ".");
+        if (!Boolean.TRUE.equals(expandable)) {
+            throw new NotSupportException("node " + name + " is not expandable, it can not add " + childNode.name + ".");
         }
 
         if (Boolean.TRUE.equals(locked)) {
-            throw new NodeNotSupportException("node " + name + " is locked, it can not add " + childNode.name + ".");
+            throw new NotSupportException("node " + name + " is locked, it can not add " + childNode.name + ".");
         }
 
         childNodeList.add(childNode);
     }
 
     public List<TreeNode> getChildNodeList() {
-        if (childNodeList == null){
+        if (childNodeList == null) {
             return null;
         }
 
-        if (order == null){
+        if (order == null) {
             return Collections.unmodifiableList(childNodeList);
         }
 
@@ -183,13 +222,13 @@ public class TreeNode {
     }
 
     public void setChildNodeList(List<TreeNode> childNodeList) {
-        if (childNodeList == null){
+        if (childNodeList == null) {
             this.childNodeList = null;
             return;
         }
 
-        if (!expandable){
-            throw new NodeNotSupportException("node " + name + " is not expandable, it should not add others.");
+        if (Boolean.FALSE.equals(expandable)) {
+            throw new NotSupportException("node " + name + " is not expandable, it should not add others.");
         }
 
         for (TreeNode childNode : childNodeList) {
@@ -200,7 +239,7 @@ public class TreeNode {
         this.childNodeList = new ArrayList<>(childNodeList);
     }
 
-    private boolean isRootNode(){
+    private boolean isRootNode() {
         return parentId == null;
     }
 
