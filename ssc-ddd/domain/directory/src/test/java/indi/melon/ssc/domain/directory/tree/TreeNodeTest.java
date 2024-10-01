@@ -140,6 +140,8 @@ class TreeNodeTest {
 
         TreeNode childNode4 = buildNode(new NodeID("4"), new NodeID("2"));
         assertThrows(NotSupportException.class, () -> rootNode.add(childNode4));
+
+        assertThrows(NotSupportException.class, () -> rootNode.move(new NodeID("1"), new NodeID("2")));
     }
 
     @Test
@@ -232,7 +234,24 @@ class TreeNodeTest {
     }
 
     @Test
-    public void should_not_rename_and_remove_if_it_locked(){
+    public void should_move_node_to_right_parent(){
+        TreeNode rootNode = buildNode(new NodeID("0"), null);
+
+        TreeNode treeNode1 = buildNode(new NodeID("1"), new NodeID("0"));
+        TreeNode treeNode2 = buildNode(new NodeID("2"), new NodeID("0"));
+        Arrays.asList(treeNode1, treeNode2).forEach(rootNode::add);
+
+        rootNode.move(new NodeID("1"), new NodeID("2"));
+        assertFalse(rootNode.getChildNodeList().contains(treeNode1));
+        assertTrue(treeNode2.getChildNodeList().contains(treeNode1));
+        assertEquals(new NodeID("2"), treeNode1.getParentId());
+
+        assertThrows(NotFoundException.class, () -> rootNode.move(new NodeID("3"), new NodeID("2")));
+        assertThrows(NotFoundException.class, () -> rootNode.move(new NodeID("2"), new NodeID("3")));
+    }
+
+    @Test
+    public void should_not_rename_and_remove_and_move_if_locked(){
         TreeNode tempNode = new TreeNode();
         TreeNode rootNode = buildTree();
 
@@ -253,6 +272,11 @@ class TreeNodeTest {
         assertThrows(NotSupportException.class, () -> rootNode.remove(new NodeID("10")));
         tempNode.setId(new NodeID("10"));
         assertTrue(rootNode.exist(tempNode));
+
+        TreeNode treeNode14 = buildNode(new NodeID("14"), new NodeID("0"));
+        rootNode.add(treeNode14);
+
+        assertThrows(NotSupportException.class, () -> rootNode.move(new NodeID("14"), new NodeID("10")));
     }
 
     private TreeNode buildUnExpandableNode(NodeID id, NodeID parentId){

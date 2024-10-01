@@ -123,6 +123,29 @@ public class TreeNode {
         treeNode.updateTime = LocalDateTime.now();
     }
 
+    public void move(NodeID nodeID, NodeID toNodeID){
+        if (!isRootNode()) {
+            throw new NotSupportException("node " + name + " is not root node, it should not rename others.");
+        }
+
+        TreeNode node = findTreeNode(nodeID);
+        if (node == null){
+            throw new NotFoundException("node " + nodeID + "is not found.");
+        }
+
+        TreeNode oldParentNode = findTreeNode(node.parentId);
+        if (oldParentNode == null) {
+            throw new IllegalNodeException("node " + nodeID + " should specify a parent node, but its null.");
+        }
+
+        TreeNode newParentNode = findTreeNode(toNodeID);
+        if (newParentNode == null) {
+            throw new NotFoundException("node " + toNodeID + " is not found.");
+        }
+        newParentNode.allocate(node);
+        oldParentNode.deallocate(nodeID);
+    }
+
     public boolean isLocked(NodeID nodeID) {
         TreeNode treeNode = findTreeNode(nodeID);
         if (treeNode == null) {
@@ -203,6 +226,7 @@ public class TreeNode {
         }
 
         childNodeList.add(childNode);
+        childNode.parentId = id;
     }
 
     public List<TreeNode> getChildNodeList() {
