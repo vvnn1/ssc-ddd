@@ -24,6 +24,6 @@ public class VersionManager {
             throw new VersionLockedException("version " + versionID + " is locked, it can be deleted.");
         }
 
-        versionRepository.remove(version);
+        versionRepository.delete(version);
     }
 }

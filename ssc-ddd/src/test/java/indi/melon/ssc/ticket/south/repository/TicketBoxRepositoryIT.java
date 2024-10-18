@@ -42,14 +42,14 @@ public class TicketBoxRepositoryIT {
     }
 
     @Test
-    public void should_remove_existing_ticket_box() {
+    public void should_delete_existing_ticket_box() {
         assertNull(ticketBoxRepository.ticketBoxOf(new BoxID("0")));
 
         AutoIncrTicketBox box1 = buildAutoIncrTicketBox();
         ticketBoxRepository.save(box1);
 
         assertNotNull(ticketBoxRepository.ticketBoxOf(new BoxID("0")));
-        ticketBoxRepository.remove(new BoxID("0"));
+        ticketBoxRepository.delete(new BoxID("0"));
 
         assertNull(ticketBoxRepository.ticketBoxOf(new BoxID("0")));
     }

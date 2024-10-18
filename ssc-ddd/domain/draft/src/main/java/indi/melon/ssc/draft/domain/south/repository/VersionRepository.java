@@ -9,6 +9,6 @@ import indi.melon.ssc.draft.domain.version.VersionID;
  */
 public interface VersionRepository {
     Version versionOf(VersionID versionID);
-    void remove(Version version);
+    void delete(Version version);
     void save(Version version);
 }

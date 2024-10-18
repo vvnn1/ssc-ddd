@@ -78,14 +78,14 @@ class TreeNodeRepositoryIT {
     }
 
     @Test
-    public void should_remove_tree_node_normally(){
+    public void should_delete_tree_node_normally(){
         assertNull(treeNodeRepository.treeNodeOf(new NodeID("0")));
 
         TreeNode rootNode = buildNode(new NodeID("0"), null);
         treeNodeRepository.save(rootNode);
 
         assertNotNull(treeNodeRepository.treeNodeOf(new NodeID("0")));
-        treeNodeRepository.remove(new NodeID("0"));
+        treeNodeRepository.delete(new NodeID("0"));
         assertNull(treeNodeRepository.treeNodeOf(new NodeID("0")));
     }
 }

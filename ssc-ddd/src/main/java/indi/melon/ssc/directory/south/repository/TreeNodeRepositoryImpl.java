@@ -40,7 +40,7 @@ public class TreeNodeRepositoryImpl implements TreeNodeRepository {
     }
 
     @Override
-    public void remove(NodeID id) {
+    public void delete(NodeID id) {
         try {
             treeNodeDao.deleteById(id);
         } catch (Exception e) {

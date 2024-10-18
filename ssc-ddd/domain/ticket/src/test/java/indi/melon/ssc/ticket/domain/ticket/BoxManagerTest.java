@@ -224,7 +224,7 @@ class BoxManagerTest {
         }
 
         @Override
-        public void remove(BoxID id) {
+        public void delete(BoxID id) {
 
         }
     }
@@ -261,7 +261,7 @@ class BoxManagerTest {
         }
 
         @Override
-        public void remove(BoxID id) {
+        public void delete(BoxID id) {
 
         }
 

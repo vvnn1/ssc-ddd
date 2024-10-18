@@ -38,7 +38,7 @@ public class TicketBoxRepositoryImpl implements TicketBoxRepository {
     }
 
     @Override
-    public void remove(BoxID id) {
+    public void delete(BoxID id) {
         try {
             ticketBoxDao.deleteById(id);
         } catch (Exception e){

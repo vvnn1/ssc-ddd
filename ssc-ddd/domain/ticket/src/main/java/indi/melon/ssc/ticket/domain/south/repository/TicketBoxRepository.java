@@ -10,5 +10,5 @@ import indi.melon.ssc.ticket.domain.ticket.TicketBox;
 public interface TicketBoxRepository {
     TicketBox<?> ticketBoxOf(BoxID id);
     void save(TicketBox<?> ticketBox);
-    void remove(BoxID id);
+    void delete(BoxID id);
 }

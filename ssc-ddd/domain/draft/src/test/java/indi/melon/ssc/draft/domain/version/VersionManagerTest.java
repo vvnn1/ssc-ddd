@@ -66,7 +66,7 @@ public class VersionManagerTest {
         }
 
         @Override
-        public void remove(Version version) {
+        public void delete(Version version) {
             dbMap.remove(version.getId());
         }
 
