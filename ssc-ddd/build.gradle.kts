@@ -20,11 +20,15 @@ repositories {
 }
 
 dependencies {
+    implementation(project(":ssc-ddd:domain:common"))
+    implementation(project(":ssc-ddd:domain:directory"))
+    compileOnly("org.projectlombok:lombok:1.18.22")
+    annotationProcessor("org.projectlombok:lombok:1.18.22")
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
     implementation("org.springframework.boot:spring-boot-starter-web")
     testImplementation("org.springframework.boot:spring-boot-starter-test")
-    testImplementation("org.junit.jupiter:junit-jupiter-api:5.8.1")
-    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.8.1")
+//    testImplementation("org.junit.jupiter:junit-jupiter-api:5.8.1")
+//    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.8.1")
     testImplementation("com.h2database:h2:2.3.232")
 }
 
