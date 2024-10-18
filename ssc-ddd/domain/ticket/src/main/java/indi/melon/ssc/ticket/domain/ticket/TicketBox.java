@@ -1,8 +1,6 @@
 package indi.melon.ssc.ticket.domain.ticket;
 
-import jakarta.persistence.EmbeddedId;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Transient;
+import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
@@ -16,17 +14,21 @@ import java.util.concurrent.ConcurrentLinkedQueue;
  * @author vvnn1
  * @since 2024/4/9 13:41
  */
-@Getter
-@Setter
-@ToString
 @Entity
+@Access(AccessType.FIELD)
+@Inheritance(strategy = InheritanceType.SINGLE_TABLE)
+@DiscriminatorColumn(name = "type", discriminatorType = DiscriminatorType.STRING)
+@Getter
+@Setter(AccessLevel.PACKAGE)
+@ToString
 public abstract class TicketBox<T> implements Iterator<T> {
     @EmbeddedId
     private BoxID id;
-    private T currentMaxTicket;
     private Integer ticketNum;
     private String desc;
     private LocalDateTime updateTime;
+    @Column(updatable = false, insertable = false)
+    @Enumerated(value = EnumType.STRING)
     private TicketEnum type;
     @Transient
     @Getter(AccessLevel.NONE)
@@ -36,29 +38,37 @@ public abstract class TicketBox<T> implements Iterator<T> {
     public TicketBox() {
     }
 
+    public TicketBox(BoxID id, Integer ticketNum, String desc, TicketEnum type) {
+        this.id = id;
+        this.ticketNum = ticketNum;
+        this.desc = desc;
+        this.updateTime = LocalDateTime.now();
+        this.type = type;
+    }
+
     @Override
     public boolean hasNext() {
         if (!hasGenTickets()){
             synchronized (this){
                 if (!hasGenTickets()){
-                    genTickets();
+                    fillTickets();
                 }
             }
         }
         return !ticketQueue.isEmpty();
     }
 
-    private void genTickets(){
-        Collection<T> tickets = genTickets(currentMaxTicket, ticketNum);
+    private void fillTickets() {
+        Collection<T> tickets = genTickets(ticketNum);
         ticketQueue = new ConcurrentLinkedQueue<>(tickets);
-        currentMaxTicket = incrMaxTicket(currentMaxTicket, ticketNum);
+        updateTime = LocalDateTime.now();
     }
 
     boolean hasGenTickets(){
         return ticketQueue != null;
     }
 
-    protected abstract Collection<T> genTickets(T currentMaxTicket, Integer ticketNums);
+    protected abstract Collection<T> genTickets(Integer ticketNums);
 
     @Override
     public T next() {
@@ -68,5 +78,4 @@ public abstract class TicketBox<T> implements Iterator<T> {
         return ticketQueue.remove();
     }
 
-    protected abstract T incrMaxTicket(T currentMaxTicket, Integer ticketNum);
 }

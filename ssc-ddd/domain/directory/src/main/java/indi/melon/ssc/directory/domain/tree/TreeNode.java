@@ -314,7 +314,7 @@ public class TreeNode {
 
     public void setSort(Sort sort) {
         if (!isRootNode()){
-            throw new IllegalNodeException("only root node is allowed to sort. but " + name);
+            throw new IllegalNodeException("only root node is allowed to sort. but " + name + " is a child.");
         }
 
         this.sort = sort;

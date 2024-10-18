@@ -222,6 +222,11 @@ class BoxManagerTest {
         @Override
         public void save(TicketBox<?> ticketBox) {
         }
+
+        @Override
+        public void remove(BoxID id) {
+
+        }
     }
 
     static class TestTicketBoxRepositoryImpl implements TicketBoxRepository{
@@ -239,11 +244,11 @@ class BoxManagerTest {
 
         @Override
         public TicketBox<?> ticketBoxOf(BoxID id) {
-            TicketBox<Integer> ticketBox = dbMap.get(id);
+            TicketBox<Long> ticketBox = dbMap.get(id);
             if (ticketBox == null){
                 return null;
             }
-            TicketBox<Integer> testTicketBox = new AutoIncrTicketBox();
+            TicketBox<Long> testTicketBox = new AutoIncrTicketBox();
             copy(ticketBox, testTicketBox);
             return testTicketBox;
         }
@@ -255,13 +260,20 @@ class BoxManagerTest {
             dbMap.put(ticketBoxDB.getId(), (AutoIncrTicketBox) ticketBoxDB);
         }
 
+        @Override
+        public void remove(BoxID id) {
+
+        }
+
         private <T> void copy(TicketBox<T> box1, TicketBox<T> box2){
             box2.setId(box1.getId());
-            box2.setCurrentMaxTicket(box1.getCurrentMaxTicket());
             box2.setTicketNum(box1.getTicketNum());
             box2.setUpdateTime(box1.getUpdateTime());
             box2.setDesc(box1.getDesc());
             box2.setType(box1.getType());
+            if (box2 instanceof AutoIncrTicketBox b2 && box1 instanceof AutoIncrTicketBox b1){
+                b2.setCurrentMaxTicket(b1.getCurrentMaxTicket());
+            }
         }
 
         private AutoIncrTicketBox createTicketBox(BoxID id){

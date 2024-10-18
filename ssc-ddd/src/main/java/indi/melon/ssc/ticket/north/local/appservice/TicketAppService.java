@@ -1,0 +1,34 @@
+package indi.melon.ssc.ticket.north.local.appservice;
+
+import indi.melon.ssc.common.exception.ApplicationValidationException;
+import indi.melon.ssc.ticket.domain.ticket.BoxID;
+import indi.melon.ssc.ticket.domain.ticket.TicketManager;
+import indi.melon.ssc.ticket.north.local.message.TicketCreateCommand;
+import org.springframework.stereotype.Service;
+
+import java.util.Objects;
+
+/**
+ * @author wangmenglong
+ * @since 2024/10/17 19:39
+ */
+@Service
+public class TicketAppService {
+
+    private final TicketManager ticketManager;
+
+    public TicketAppService(TicketManager ticketManager) {
+        this.ticketManager = ticketManager;
+    }
+
+    public <T> T require(TicketCreateCommand<T> command) {
+        String bizTag = command.getBizTag();
+        Class<T> clazz = command.getClazz();
+
+        Object ticket = ticketManager.require(
+                new BoxID(bizTag)
+        );
+
+        return clazz.cast(ticket);
+    }
+}

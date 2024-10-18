@@ -15,6 +15,8 @@ import static indi.melon.ssc.directory.domain.tree.Sort.Order.asc;
 import static indi.melon.ssc.directory.domain.tree.Sort.Order.desc;
 import static indi.melon.ssc.directory.domain.tree.Sort.TreeNodeField.createTime;
 import static indi.melon.ssc.directory.domain.tree.Sort.TreeNodeField.name;
+import static indi.melon.ssc.directory.domain.tree.TreeNodeUtil.buildNode;
+import static indi.melon.ssc.directory.domain.tree.TreeNodeUtil.buildUnExpandableNode;
 import static org.junit.jupiter.api.Assertions.*;
 
 

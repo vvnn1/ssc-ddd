@@ -5,7 +5,6 @@ import indi.melon.ssc.directory.south.repository.dao.TreeNodeDao;
 import indi.melon.ssc.directory.domain.south.repository.TreeNodeRepository;
 import indi.melon.ssc.directory.domain.tree.TreeNode;
 import indi.melon.ssc.directory.domain.tree.NodeID;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
 /**
@@ -14,8 +13,11 @@ import org.springframework.stereotype.Repository;
  */
 @Repository
 public class TreeNodeRepositoryImpl implements TreeNodeRepository {
-    @Autowired
-    private TreeNodeDao treeNodeDao;
+    private final TreeNodeDao treeNodeDao;
+
+    public TreeNodeRepositoryImpl(TreeNodeDao treeNodeDao) {
+        this.treeNodeDao = treeNodeDao;
+    }
 
     @Override
     public TreeNode treeNodeOf(NodeID id) {
@@ -23,7 +25,7 @@ public class TreeNodeRepositoryImpl implements TreeNodeRepository {
             return treeNodeDao.findById(id)
                     .orElse(null);
         } catch (Exception e) {
-            throw new ApplicationInfrastructureException("query tree node by " + id + " fail.", e);
+            throw new ApplicationInfrastructureException("find tree node by " + id + " fail.", e);
         }
 
     }
@@ -33,7 +35,7 @@ public class TreeNodeRepositoryImpl implements TreeNodeRepository {
         try {
             treeNodeDao.save(treeNode);
         } catch (Exception e) {
-            throw new ApplicationInfrastructureException("save tree node fail.", e);
+            throw new ApplicationInfrastructureException("save tree node fail. node: " + treeNode, e);
         }
     }
 

@@ -12,10 +12,10 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
  */
 @SpringBootApplication
 @EnableJpaRepositories(
-        basePackages = "indi.melon.ssc.directory.south.repository.dao",
+        basePackages = "indi.melon.ssc.*.south.repository.dao",
         repositoryImplementationPostfix = "Dao"
 )
-@EntityScan(basePackages = "indi.melon.ssc.domain.*")
+@EntityScan(basePackages = "indi.melon.ssc.*.domain.*")
 public class SscTestApplication {
     public static void main(String[] args) {
         SpringApplication.run(SscTestApplication.class);

@@ -13,38 +13,39 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  * @since 2024/9/21 11:21
  */
 class AutoIncrTicketBoxTest {
+    private final Long currentMaxTicket = 0L;
+    private final Integer ticketNum = 5;
 
     @Test
     void should_gen_ticketNums_tickets_and_incr_1_on_currentMaxTicket() {
         AutoIncrTicketBox autoIncrTicketBox = createAutoIncrTicketBox();
-        Collection<Integer> tickets = autoIncrTicketBox.genTickets(
-                autoIncrTicketBox.getCurrentMaxTicket(),
+        Collection<Long> tickets = autoIncrTicketBox.genTickets(
                 autoIncrTicketBox.getTicketNum()
         );
 
         assertEquals(tickets.size(), (int) autoIncrTicketBox.getTicketNum());
 
         for (int i = 0; i < autoIncrTicketBox.getTicketNum(); i++) {
-            assertTrue(tickets.contains(autoIncrTicketBox.getCurrentMaxTicket() + i + 1));
+            assertTrue(tickets.contains(currentMaxTicket + i + 1));
         }
     }
 
     @Test
-    void should_return_new_maxTicket_that_equals_currentMaxTicket_add_ticketNum() {
+    void should_incr_currentMaxTicket_after_gen_tickets() {
         AutoIncrTicketBox autoIncrTicketBox = createAutoIncrTicketBox();
-        Integer incrMaxTicket = autoIncrTicketBox.incrMaxTicket(
-                autoIncrTicketBox.getCurrentMaxTicket(),
+        autoIncrTicketBox.genTickets(
                 autoIncrTicketBox.getTicketNum()
         );
 
-        assertEquals(incrMaxTicket, autoIncrTicketBox.getCurrentMaxTicket() + autoIncrTicketBox.getTicketNum());
+        assertEquals(currentMaxTicket + ticketNum, autoIncrTicketBox.getCurrentMaxTicket());
     }
+
 
     private AutoIncrTicketBox createAutoIncrTicketBox(){
         AutoIncrTicketBox autoIncrTicketBox = new AutoIncrTicketBox();
         autoIncrTicketBox.setId(new BoxID("test_id"));
-        autoIncrTicketBox.setCurrentMaxTicket(0);
-        autoIncrTicketBox.setTicketNum(5);
+        autoIncrTicketBox.setCurrentMaxTicket(currentMaxTicket);
+        autoIncrTicketBox.setTicketNum(ticketNum);
         autoIncrTicketBox.setType(TicketEnum.AUTO_INCREMENT);
         autoIncrTicketBox.setDesc("for test");
         return autoIncrTicketBox;
