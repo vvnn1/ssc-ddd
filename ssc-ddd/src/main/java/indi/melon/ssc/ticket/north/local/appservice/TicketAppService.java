@@ -22,8 +22,8 @@ public class TicketAppService {
     }
 
     public <T> T require(TicketCreateCommand<T> command) {
-        String bizTag = command.getBizTag();
-        Class<T> clazz = command.getClazz();
+        String bizTag = command.bizTag();
+        Class<T> clazz = command.clazz();
 
         Object ticket = ticketManager.require(
                 new BoxID(bizTag)

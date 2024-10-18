@@ -46,21 +46,21 @@ class TicketAppServiceIT extends SscBaseTest {
     @Test
     public void should_get_right_ticket() {
         assertThrows(ApplicationValidationException.class, () -> ticketAppService.require(
-                TicketCreateCommand.of(null, Long.class)
+                new TicketCreateCommand<>(null, Long.class)
         ));
 
         assertThrows(ApplicationValidationException.class, () -> ticketAppService.require(
-                TicketCreateCommand.of("record", null)
+                new TicketCreateCommand<>("record", null)
         ));
 
         Long recordId = ticketAppService.require(
-                TicketCreateCommand.of("record", Long.class)
+                new TicketCreateCommand<>("record", Long.class)
         );
 
         assertEquals(1L, recordId);
 
         String treeNodeId = ticketAppService.require(
-                TicketCreateCommand.of("treeNode", String.class)
+                new TicketCreateCommand<>("treeNode", String.class)
         );
 
         assertNotNull(treeNodeId);

@@ -47,7 +47,7 @@ public class TreeNode {
     public TreeNode() {
     }
 
-    public TreeNode(NodeID id, String name, String type, List<TreeNode> childNodeList, NodeID parentId,  Boolean expandable, Boolean locked) {
+    public TreeNode(NodeID id, String name, String type, List<TreeNode> childNodeList, NodeID parentId,  Boolean expandable) {
         this.id = id;
         this.name = name;
         this.type = type;
@@ -56,7 +56,7 @@ public class TreeNode {
         this.createTime = LocalDateTime.now();
         this.updateTime =  LocalDateTime.now();
         this.expandable = expandable;
-        this.locked = locked;
+        this.locked = false;
     }
 
     public boolean add(TreeNode childNode) {

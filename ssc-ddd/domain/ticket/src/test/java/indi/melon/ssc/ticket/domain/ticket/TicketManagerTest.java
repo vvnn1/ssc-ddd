@@ -20,7 +20,7 @@ import static org.junit.jupiter.api.Assertions.*;
 class TicketManagerTest {
     private TicketManager ticketManager;
     private static final int cacheSize = 3;
-    private static final int currentMaxTicket = 0;
+    private static final long currentMaxTicket = 0;
     private static final int ticketNum = 10;
 
     @BeforeEach

@@ -23,7 +23,7 @@ class BoxManagerTest {
     private BoxManager boxManager;
     private TicketBoxRepository repository;
     private static final int cacheSize = 3;
-    private static final int currentMaxTicket = 0;
+    private static final long currentMaxTicket = 0L;
     private static final int ticketNum = 10;
 
     @BeforeEach

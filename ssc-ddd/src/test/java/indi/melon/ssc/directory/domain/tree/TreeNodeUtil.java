@@ -15,8 +15,7 @@ public class TreeNodeUtil {
                 "directory",
                 new ArrayList<>(),
                 parentId,
-                true,
-                false
+                true
         );
     }
 
