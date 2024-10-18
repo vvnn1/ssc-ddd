@@ -41,8 +41,8 @@ public class TreeNode {
     private LocalDateTime updateTime;
     private Boolean expandable;
     private Boolean locked;
-    @Transient
-    private Order order;
+    @Convert(converter =  SortConverter.class)
+    private Sort sort;
 
     public TreeNode() {
     }
@@ -79,6 +79,13 @@ public class TreeNode {
 
         parentNode.allocate(childNode);
         return true;
+    }
+
+    public TreeNode get(NodeID id) {
+        if (!isRootNode()){
+            throw new IllegalNodeException("node " + this.id + " is not root node,it should not invoke get.");
+        }
+        return findTreeNode(id);
     }
 
     public boolean remove(NodeID nodeID) {
@@ -260,14 +267,16 @@ public class TreeNode {
             return null;
         }
 
-        if (order == null) {
+        if (sort == null) {
             return Collections.unmodifiableList(childNodeList);
         }
 
         for (TreeNode treeNode : childNodeList) {
-            treeNode.order = order;
+            if (treeNode.expandable){
+                treeNode.sort = sort;
+            }
         }
-        childNodeList.sort(order.comparator);
+        childNodeList.sort(sort.comparator);
         return Collections.unmodifiableList(childNodeList);
     }
 
@@ -301,5 +310,21 @@ public class TreeNode {
         return Objects.equals(parentId, treeNode.parentId)
                 && Objects.equals(name, treeNode.name)
                 && Objects.equals(type, treeNode.type);
+    }
+
+    public void setSort(Sort sort) {
+        if (!isRootNode()){
+            throw new IllegalNodeException("only root node is allowed to sort. but " + name);
+        }
+
+        this.sort = sort;
+    }
+
+    @PreUpdate
+    @PrePersist
+    private void removeSortIfNotRoot() {
+        if (!isRootNode()){
+            this.sort = null;
+        }
     }
 }

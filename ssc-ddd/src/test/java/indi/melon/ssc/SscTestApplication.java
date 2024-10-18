@@ -1,9 +1,8 @@
-package indi.melon.ssc.configuration;
+package indi.melon.ssc;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
-import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 
@@ -18,8 +17,8 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
         repositoryImplementationPostfix = "Dao"
 )
 @EntityScan(basePackages = "indi.melon.ssc.domain.*")
-public class SscTestConfiguration {
+public class SscTestApplication {
     public static void main(String[] args) {
-        SpringApplication.run(SscTestConfiguration.class);
+        SpringApplication.run(SscTestApplication.class);
     }
 }

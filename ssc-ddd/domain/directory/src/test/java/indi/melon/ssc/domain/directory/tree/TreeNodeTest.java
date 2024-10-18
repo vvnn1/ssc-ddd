@@ -1,7 +1,5 @@
 package indi.melon.ssc.domain.directory.tree;
 
-import indi.melon.ssc.domain.directory.tree.NodeID;
-import indi.melon.ssc.domain.directory.tree.TreeNode;
 import indi.melon.ssc.domain.directory.tree.exception.AlreadyExistException;
 import indi.melon.ssc.domain.directory.tree.exception.IllegalNodeException;
 import indi.melon.ssc.domain.directory.tree.exception.NotFoundException;
@@ -10,7 +8,9 @@ import org.junit.jupiter.api.Test;
 import java.time.LocalDateTime;
 import java.util.*;
 
-import static indi.melon.ssc.domain.directory.tree.Order.*;
+import static indi.melon.ssc.domain.directory.tree.Sort.*;
+import static indi.melon.ssc.domain.directory.tree.Sort.TreeNodeField.createTime;
+import static indi.melon.ssc.domain.directory.tree.Sort.Order.asc;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
@@ -83,7 +83,7 @@ class TreeNodeTest {
 
         assertFalse(isCreateTimeAsc(rootNode));
 
-        rootNode.setOrder(orderBy(createTime, asc));
+        rootNode.setSort(orderBy(createTime, asc));
         assertTrue(isCreateTimeAsc(rootNode));
 
 
@@ -126,6 +126,16 @@ class TreeNodeTest {
 
         TreeNode childNode2 = buildNode(new NodeID("2"), new NodeID("1"));
         assertThrows(NotSupportException.class, () -> childNode1.add(childNode2));
+    }
+
+    @Test
+    public void should_get_node_if_its_root_node() {
+        TreeNode rootNode = buildTree();
+        assertNull(rootNode.get(new NodeID("12")));
+        TreeNode treeNode7 = rootNode.get(new NodeID("7"));
+        assertEquals(new NodeID("7"), treeNode7.getId());
+
+        assertThrows(IllegalNodeException.class, () -> treeNode7.get(new NodeID("12")));
     }
 
     @Test
