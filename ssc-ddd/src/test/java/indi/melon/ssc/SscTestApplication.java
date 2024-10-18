@@ -11,7 +11,6 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
  * @since 2024/10/7 22:51
  */
 @SpringBootApplication
-@ComponentScan(basePackages = "indi.melon.ssc")
 @EnableJpaRepositories(
         basePackages = "indi.melon.ssc.directory.south.repository.dao",
         repositoryImplementationPostfix = "Dao"

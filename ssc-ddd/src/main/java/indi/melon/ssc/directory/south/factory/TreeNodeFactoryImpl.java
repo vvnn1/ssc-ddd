@@ -1,7 +1,7 @@
 package indi.melon.ssc.directory.south.factory;
 
-import indi.melon.ssc.domain.directory.south.factory.TreeNodeFactory;
-import indi.melon.ssc.domain.directory.tree.TreeNode;
+import indi.melon.ssc.directory.domain.south.factory.TreeNodeFactory;
+import indi.melon.ssc.directory.domain.tree.TreeNode;
 
 /**
  * @author vvnn1

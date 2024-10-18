@@ -1,21 +1,20 @@
 package indi.melon.ssc.directory.south.repository;
 
 import indi.melon.ssc.SscTestApplication;
-import indi.melon.ssc.domain.directory.south.repository.TreeNodeRepository;
-import indi.melon.ssc.domain.directory.tree.NodeID;
-import indi.melon.ssc.domain.directory.tree.Sort;
-import indi.melon.ssc.domain.directory.tree.TreeNode;
+import indi.melon.ssc.directory.domain.south.repository.TreeNodeRepository;
+import indi.melon.ssc.directory.domain.tree.NodeID;
+import indi.melon.ssc.directory.domain.tree.Sort;
+import indi.melon.ssc.directory.domain.tree.TreeNode;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import java.util.Arrays;
 
-import static indi.melon.ssc.domain.directory.tree.Sort.Order.asc;
-import static indi.melon.ssc.domain.directory.tree.Sort.Order.desc;
-import static indi.melon.ssc.domain.directory.tree.Sort.TreeNodeField.createTime;
-import static indi.melon.ssc.domain.directory.tree.Sort.TreeNodeField.name;
-import static indi.melon.ssc.domain.directory.tree.TreeNodeUtil.*;
+import static indi.melon.ssc.directory.domain.tree.Sort.Order.asc;
+import static indi.melon.ssc.directory.domain.tree.Sort.Order.desc;
+import static indi.melon.ssc.directory.domain.tree.Sort.TreeNodeField.createTime;
+import static indi.melon.ssc.directory.domain.tree.Sort.TreeNodeField.name;
 import static org.junit.jupiter.api.Assertions.*;
 
 

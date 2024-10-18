@@ -1,3 +1,12 @@
+pluginManagement {
+    repositories {
+        maven {
+            url=uri("https://maven.aliyun.com/repository/gradle-plugin")
+        }
+        gradlePluginPortal()
+    }
+}
+
 rootProject.name = "ssc"
 include("ssc-ddd")
 include("ssc-ddd:domain")

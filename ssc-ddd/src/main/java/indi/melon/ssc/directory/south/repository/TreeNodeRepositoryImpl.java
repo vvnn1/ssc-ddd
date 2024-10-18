@@ -2,9 +2,9 @@ package indi.melon.ssc.directory.south.repository;
 
 import indi.melon.ssc.common.exception.ApplicationInfrastructureException;
 import indi.melon.ssc.directory.south.repository.dao.TreeNodeDao;
-import indi.melon.ssc.domain.directory.south.repository.TreeNodeRepository;
-import indi.melon.ssc.domain.directory.tree.TreeNode;
-import indi.melon.ssc.domain.directory.tree.NodeID;
+import indi.melon.ssc.directory.domain.south.repository.TreeNodeRepository;
+import indi.melon.ssc.directory.domain.tree.TreeNode;
+import indi.melon.ssc.directory.domain.tree.NodeID;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 

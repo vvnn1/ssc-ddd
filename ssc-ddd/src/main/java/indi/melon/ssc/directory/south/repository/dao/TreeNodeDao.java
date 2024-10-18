@@ -1,7 +1,7 @@
 package indi.melon.ssc.directory.south.repository.dao;
 
-import indi.melon.ssc.domain.directory.tree.TreeNode;
-import indi.melon.ssc.domain.directory.tree.NodeID;
+import indi.melon.ssc.directory.domain.tree.TreeNode;
+import indi.melon.ssc.directory.domain.tree.NodeID;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 /**
