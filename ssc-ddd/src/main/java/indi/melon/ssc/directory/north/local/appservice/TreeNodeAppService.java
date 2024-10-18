@@ -7,6 +7,7 @@ import indi.melon.ssc.directory.domain.tree.NodeID;
 import indi.melon.ssc.directory.domain.south.factory.TreeNodeFactory;
 import indi.melon.ssc.directory.domain.south.repository.TreeNodeRepository;
 import indi.melon.ssc.directory.north.local.message.CreateNodeCommand;
+import indi.melon.ssc.directory.north.local.message.RenameNodeCommand;
 import indi.melon.ssc.domain.common.cqrs.DomainException;
 import org.springframework.stereotype.Service;
 
@@ -67,5 +68,30 @@ public class TreeNodeAppService {
 
         treeNodeRepository.save(rootNode);
         return treeNode.getId().getId();
+    }
+
+    /**
+     * 重命名节点
+     * @param renameCommand 重命名命令
+     */
+    public void rename(RenameNodeCommand renameCommand) {
+        TreeNode rootNode = treeNodeRepository.treeNodeOf(
+                new NodeID(renameCommand.rootNodeId())
+        );
+
+        if (rootNode == null) {
+            throw new ApplicationValidationException("can not found root node by id " + renameCommand.rootNodeId() + ".");
+        }
+
+        try {
+            rootNode.rename(
+                    new NodeID(renameCommand.treeNode().id()),
+                    renameCommand.treeNode().newName()
+            );
+        }catch (DomainException e){
+            throw new ApplicationDomainException("node rename fail.", e);
+        }
+
+        treeNodeRepository.save(rootNode);
     }
 }

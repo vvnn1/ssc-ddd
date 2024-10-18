@@ -200,6 +200,10 @@ class TreeNodeTest {
         assertTrue(rootNode.exist(buildNameNode(new NodeID("122"), new NodeID("3"), "1222"))); // 名称、类型、父文件相同
 
         assertThrows(IllegalNodeException.class, () -> rootNode.rename(new NodeID("13"), "should_throws"));
+
+
+        TreeNode rootNode2 = buildNode(new NodeID("0"), null);
+        assertThrows(NotSupportException.class, () -> rootNode2.rename(new NodeID("0"), "CantRename"));
     }
 
     @Test

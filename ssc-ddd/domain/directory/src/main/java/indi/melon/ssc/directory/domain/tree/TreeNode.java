@@ -144,6 +144,10 @@ public class TreeNode {
             throw new IllegalNodeException("node " + id + " is not exist.");
         }
 
+        if (treeNode.isRootNode()){
+            throw new NotSupportException("root node " + id + " can not be rename.");
+        }
+
         if (Boolean.TRUE.equals(treeNode.locked)) {
             throw new NotSupportException("node " + treeNode.name + " is locked, it can be rename.");
         }

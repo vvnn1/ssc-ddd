@@ -1,12 +1,14 @@
 package indi.melon.ssc.directory.north.local.appservice;
 
 import indi.melon.ssc.SscBaseTest;
+import indi.melon.ssc.common.exception.ApplicationDomainException;
 import indi.melon.ssc.common.exception.ApplicationValidationException;
 import indi.melon.ssc.directory.common.BizTagProperties;
 import indi.melon.ssc.directory.domain.south.repository.TreeNodeRepository;
 import indi.melon.ssc.directory.domain.tree.NodeID;
 import indi.melon.ssc.directory.domain.tree.TreeNode;
 import indi.melon.ssc.directory.north.local.message.CreateNodeCommand;
+import indi.melon.ssc.directory.north.local.message.RenameNodeCommand;
 import indi.melon.ssc.ticket.domain.south.repository.TicketBoxRepository;
 import indi.melon.ssc.ticket.domain.ticket.BoxID;
 import indi.melon.ssc.ticket.domain.ticket.UuidTicketBox;
@@ -57,9 +59,23 @@ class TreeNodeAppServiceIT extends SscBaseTest {
                         "iamroot",
                         "directory",
                         true,
-                        "111"
+                        "111" //child node should assign rootNodeId
                 )
         ));
+
+        assertThrows(ApplicationValidationException.class, () -> treeNodeAppService.create(
+                new CreateNodeCommand(
+                        "111",// not found rootNode
+                        new CreateNodeCommand.TreeNode(
+                                "iamroot",
+                                "directory",
+                                true,
+                                "111"
+                        )
+                )
+        ));
+
+
 
 
         CreateNodeCommand rootNodeCreateCommand = new CreateNodeCommand(
@@ -117,5 +133,77 @@ class TreeNodeAppServiceIT extends SscBaseTest {
         assertTrue(childNode.getChildNodeList().isEmpty());
         assertFalse(childNode.getLocked());
 
+    }
+
+
+    @Test
+    void should_rename_node_normally() {
+        assertThrows(ApplicationValidationException.class, () -> new RenameNodeCommand(
+                "11",
+                new RenameNodeCommand.TreeNode(
+                        "1",
+                        "  "//newName should not be blank,
+                )
+        ));
+
+        assertThrows(ApplicationValidationException.class, () -> treeNodeAppService.rename(
+                new RenameNodeCommand(
+                        "111",
+                        new RenameNodeCommand.TreeNode(
+                                "222",
+                                "new name"
+                        )
+                )
+        ));
+
+
+        String rootNodeId = treeNodeAppService.create(
+                new CreateNodeCommand(
+                        null,
+                        new CreateNodeCommand.TreeNode(
+                                "IamRoot",
+                                "directory",
+                                true,
+                                null
+                        )
+                )
+        );
+
+        assertThrows(ApplicationDomainException.class, () -> treeNodeAppService.rename(
+                new RenameNodeCommand(
+                        rootNodeId,
+                        new RenameNodeCommand.TreeNode(
+                                rootNodeId,
+                                "RenameRootNode"
+                        )
+                )
+        ));
+
+        final String childNodeName = "IamChild";
+        String childNodeId = treeNodeAppService.create(
+                new CreateNodeCommand(
+                        rootNodeId,
+                        new CreateNodeCommand.TreeNode(
+                                childNodeName,
+                                "directory",
+                                true,
+                                rootNodeId
+                        )
+                )
+        );
+
+        final String childNodeNewName = "IamChildNew";
+        treeNodeAppService.rename(
+                new RenameNodeCommand(
+                        rootNodeId,
+                        new RenameNodeCommand.TreeNode(
+                                childNodeId,
+                                childNodeNewName
+                        )
+                )
+        );
+
+        TreeNode rootNode = treeNodeRepository.treeNodeOf(new NodeID(rootNodeId));
+        assertEquals(childNodeNewName, rootNode.getChildNodeList().get(0).getName());
     }
 }
