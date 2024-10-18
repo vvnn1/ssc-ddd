@@ -79,13 +79,32 @@ class TreeNodeRepositoryIT {
 
     @Test
     public void should_delete_tree_node_normally(){
-        assertNull(treeNodeRepository.treeNodeOf(new NodeID("0")));
-
         TreeNode rootNode = buildNode(new NodeID("0"), null);
         treeNodeRepository.save(rootNode);
 
         assertNotNull(treeNodeRepository.treeNodeOf(new NodeID("0")));
         treeNodeRepository.delete(new NodeID("0"));
         assertNull(treeNodeRepository.treeNodeOf(new NodeID("0")));
+    }
+
+    @Test
+    public void should_delete_tree_node_cascade(){
+        TreeNode rootNode = buildNode(new NodeID("0"), null);
+
+        Arrays.asList(
+                buildNode(new NodeID("1"), new NodeID("0")),
+                buildNode(new NodeID("2"), new NodeID("0")),
+                buildNode(new NodeID("3"), new NodeID("1"))
+        ).forEach(rootNode::add);
+        treeNodeRepository.save(rootNode);
+
+        assertNotNull(treeNodeRepository.treeNodeOf(new NodeID("3")));
+
+        rootNode = treeNodeRepository.treeNodeOf(new NodeID("0"));
+        rootNode.remove(new NodeID("1"));
+        treeNodeRepository.save(rootNode);
+
+        assertNull(treeNodeRepository.treeNodeOf(new NodeID("3")));
+
     }
 }

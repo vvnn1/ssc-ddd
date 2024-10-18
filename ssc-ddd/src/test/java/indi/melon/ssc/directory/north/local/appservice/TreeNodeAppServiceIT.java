@@ -244,6 +244,18 @@ class TreeNodeAppServiceIT extends SscBaseTest {
                 )
         );
 
+        String childNodeId2 = treeNodeAppService.create(
+                new CreateNodeCommand(
+                        rootNodeId,
+                        new CreateNodeCommand.TreeNode(
+                                "IamChildNode2",
+                                "file",
+                                false,
+                                childNodeId
+                        )
+                )
+        );
+
         TreeNode rootNode = treeNodeRepository.treeNodeOf(new NodeID(rootNodeId));
         assertFalse(rootNode.getChildNodeList().isEmpty());
 
@@ -258,5 +270,8 @@ class TreeNodeAppServiceIT extends SscBaseTest {
 
         rootNode = treeNodeRepository.treeNodeOf(new NodeID(rootNodeId));
         assertTrue(rootNode.getChildNodeList().isEmpty());
+
+        assertNull(treeNodeRepository.treeNodeOf(new NodeID(childNodeId)));
+        assertNull(treeNodeRepository.treeNodeOf(new NodeID(childNodeId2)));
     }
 }
