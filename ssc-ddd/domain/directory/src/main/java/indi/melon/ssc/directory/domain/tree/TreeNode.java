@@ -102,7 +102,7 @@ public class TreeNode {
             throw new NotSupportException("node " + treeNode.name + " is locked, it can be remove.");
         }
 
-        if (treeNode.parentId == null) {
+        if (treeNode.isRootNode()) {
             throw new NotSupportException("node " + treeNode.name + " is root node, it can not be remove.");
         }
 

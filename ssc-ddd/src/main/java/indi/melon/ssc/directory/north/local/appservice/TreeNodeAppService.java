@@ -7,6 +7,7 @@ import indi.melon.ssc.directory.domain.tree.NodeID;
 import indi.melon.ssc.directory.domain.south.factory.TreeNodeFactory;
 import indi.melon.ssc.directory.domain.south.repository.TreeNodeRepository;
 import indi.melon.ssc.directory.north.local.message.CreateNodeCommand;
+import indi.melon.ssc.directory.north.local.message.DropNodeCommand;
 import indi.melon.ssc.directory.north.local.message.RenameNodeCommand;
 import indi.melon.ssc.domain.common.cqrs.DomainException;
 import org.springframework.stereotype.Service;
@@ -43,15 +44,7 @@ public class TreeNodeAppService {
             return rootNode.getId().getId();
         }
 
-        TreeNode rootNode = treeNodeRepository.treeNodeOf(
-                new NodeID(
-                        createCommand.rootNodeId()
-                )
-        );
-
-        if (rootNode == null) {
-            throw new ApplicationValidationException("can not found root node by id " + createCommand.rootNodeId() + ".");
-        }
+        TreeNode rootNode = nonNullRootNodeOf(createCommand.rootNodeId());
 
         TreeNode treeNode = treeNodeFactory.create(
                 createCommand.treeNode().name(),
@@ -75,13 +68,7 @@ public class TreeNodeAppService {
      * @param renameCommand 重命名命令
      */
     public void rename(RenameNodeCommand renameCommand) {
-        TreeNode rootNode = treeNodeRepository.treeNodeOf(
-                new NodeID(renameCommand.rootNodeId())
-        );
-
-        if (rootNode == null) {
-            throw new ApplicationValidationException("can not found root node by id " + renameCommand.rootNodeId() + ".");
-        }
+        TreeNode rootNode = nonNullRootNodeOf(renameCommand.rootNodeId());
 
         try {
             rootNode.rename(
@@ -93,5 +80,34 @@ public class TreeNodeAppService {
         }
 
         treeNodeRepository.save(rootNode);
+    }
+
+    /**
+     * 删除节点
+     * @param dropNodeCommand 删除命令
+     */
+    public void drop(DropNodeCommand dropNodeCommand) {
+        TreeNode rootNode = nonNullRootNodeOf(dropNodeCommand.rootNodeId());
+
+        try {
+            rootNode.remove(
+                    new NodeID(dropNodeCommand.treeNode().id())
+            );
+        } catch (DomainException e) {
+            throw new ApplicationDomainException("node drop fail.", e);
+        }
+
+        treeNodeRepository.save(rootNode);
+    }
+
+    private TreeNode nonNullRootNodeOf(String rootNodeId) {
+        TreeNode rootNode = treeNodeRepository.treeNodeOf(
+                new NodeID(rootNodeId)
+        );
+
+        if (rootNode == null) {
+            throw new ApplicationValidationException("can not found root node by id " + rootNodeId + ".");
+        }
+        return rootNode;
     }
 }

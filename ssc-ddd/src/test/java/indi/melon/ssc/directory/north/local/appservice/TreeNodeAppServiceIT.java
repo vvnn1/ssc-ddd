@@ -8,6 +8,7 @@ import indi.melon.ssc.directory.domain.south.repository.TreeNodeRepository;
 import indi.melon.ssc.directory.domain.tree.NodeID;
 import indi.melon.ssc.directory.domain.tree.TreeNode;
 import indi.melon.ssc.directory.north.local.message.CreateNodeCommand;
+import indi.melon.ssc.directory.north.local.message.DropNodeCommand;
 import indi.melon.ssc.directory.north.local.message.RenameNodeCommand;
 import indi.melon.ssc.ticket.domain.south.repository.TicketBoxRepository;
 import indi.melon.ssc.ticket.domain.ticket.BoxID;
@@ -205,5 +206,57 @@ class TreeNodeAppServiceIT extends SscBaseTest {
 
         TreeNode rootNode = treeNodeRepository.treeNodeOf(new NodeID(rootNodeId));
         assertEquals(childNodeNewName, rootNode.getChildNodeList().get(0).getName());
+    }
+
+    @Test
+    public void should_drop_node_normally() {
+        String rootNodeId = treeNodeAppService.create(
+                new CreateNodeCommand(
+                        null,
+                        new CreateNodeCommand.TreeNode(
+                                "IamRootNode",
+                                "directory",
+                                true,
+                                null
+                        )
+                )
+        );
+
+
+        assertThrows(ApplicationDomainException.class, () -> treeNodeAppService.drop(
+                new DropNodeCommand(
+                        rootNodeId,
+                        new DropNodeCommand.TreeNode(
+                                rootNodeId
+                        )
+                )
+        ));
+
+        String childNodeId = treeNodeAppService.create(
+                new CreateNodeCommand(
+                        rootNodeId,
+                        new CreateNodeCommand.TreeNode(
+                                "IamChildNode",
+                                "directory",
+                                true,
+                                rootNodeId
+                        )
+                )
+        );
+
+        TreeNode rootNode = treeNodeRepository.treeNodeOf(new NodeID(rootNodeId));
+        assertFalse(rootNode.getChildNodeList().isEmpty());
+
+        treeNodeAppService.drop(
+                new DropNodeCommand(
+                        rootNodeId,
+                        new DropNodeCommand.TreeNode(
+                                childNodeId
+                        )
+                )
+        );
+
+        rootNode = treeNodeRepository.treeNodeOf(new NodeID(rootNodeId));
+        assertTrue(rootNode.getChildNodeList().isEmpty());
     }
 }
