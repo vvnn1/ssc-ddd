@@ -1,4 +1,4 @@
-package indi.melon.ssc;
+package indi.melon.ssc.configuration;
 
 import indi.melon.ssc.ticket.domain.south.repository.TicketBoxRepository;
 import indi.melon.ssc.ticket.domain.ticket.BoxManager;
@@ -11,7 +11,7 @@ import org.springframework.context.annotation.Configuration;
  * @since 2024/10/17 20:17
  */
 @Configuration
-public class SscBeanConfiguration {
+public class SscDomainBeanConfiguration {
     @Bean
     public BoxManager boxManager(TicketBoxRepository ticketBoxRepository) {
         return new BoxManager(ticketBoxRepository);
