@@ -1,8 +1,10 @@
 package indi.melon.ssc.draft.domain.draft;
 
 import jakarta.persistence.Embeddable;
-import jakarta.persistence.Id;
 import lombok.*;
+
+import java.io.Serial;
+import java.io.Serializable;
 
 /**
  * @author vvnn1
@@ -15,7 +17,8 @@ import lombok.*;
 @AllArgsConstructor
 @NoArgsConstructor
 @Embeddable
-public class DraftID {
-    @Id
-    private String id;
+public class DraftID implements Serializable {
+    @Serial
+    private static final long serialVersionUID = 2868811892922001290L;
+    private String value;
 }

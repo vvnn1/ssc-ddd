@@ -1,8 +1,10 @@
 package indi.melon.ssc.draft.domain.configuration;
 
 import jakarta.persistence.Embeddable;
-import jakarta.persistence.Id;
 import lombok.*;
+
+import java.io.Serial;
+import java.io.Serializable;
 
 /**
  * @author vvnn1
@@ -15,7 +17,8 @@ import lombok.*;
 @AllArgsConstructor
 @NoArgsConstructor
 @Embeddable
-public class AttachmentID {
-    @Id
-    private String id;
+public class AttachmentID implements Serializable {
+    @Serial
+    private static final long serialVersionUID = 6814732986037436521L;
+    String value;
 }

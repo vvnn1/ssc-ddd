@@ -6,14 +6,13 @@ import indi.melon.ssc.draft.domain.configuration.event.AttachmentAllocated;
 import indi.melon.ssc.draft.domain.configuration.event.AttachmentDeallocated;
 import indi.melon.ssc.draft.domain.configuration.event.EngineAllocated;
 import indi.melon.ssc.draft.domain.configuration.event.EngineDeallocated;
+import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 /**
  * @author vvnn1
@@ -22,33 +21,112 @@ import java.util.Objects;
 @Getter
 @Setter(AccessLevel.PACKAGE)
 @ToString
+@Entity
 public class Configuration extends AbstractAggregateRoot {
+    @EmbeddedId
+    @AttributeOverride(
+            name = "value", column = @Column(name="id")
+    )
     private ConfigurationID id;
+
+    @Embedded
+    @AttributeOverride(
+            name = "value", column = @Column(name="engineID")
+    )
     private EngineID engineID;
-    private List<AttachmentID> attachmentIDList;
+
+    @Convert(converter = AttachmentIDSetConverter.class)
+    private Set<AttachmentID> attachmentIDCollection;
+
+    @Embedded
+    @AttributeOverride(
+            name = "value", column = @Column(name="draftID")
+    )
     private DraftID draftID;
 
-    public void assignAttachments(List<AttachmentID> assignedAttachmentIDList) {
-        attachmentIDList.stream()
-                .filter(attachmentID -> !assignedAttachmentIDList.contains(attachmentID))
-                .map(attachmentID ->  new AttachmentDeallocated(id, attachmentID))
+    public Configuration() {
+    }
+
+    public Configuration(ConfigurationID id, DraftID draftID) {
+        this.id = id;
+        this.draftID = draftID;
+    }
+    public void assignAttachments(Collection<AttachmentID> assignedAttachmentIDCollection) {
+        if (attachmentIDCollection == null && assignedAttachmentIDCollection == null){
+            return;
+        }
+
+        if (assignedAttachmentIDCollection == null){
+            attachmentIDCollection.stream()
+                    .map(this::buildAttachmentDeallocated)
+                    .forEach(this::addEvent);
+            attachmentIDCollection = null;
+            return;
+        }
+
+        if (attachmentIDCollection == null){
+            assignedAttachmentIDCollection.stream()
+                    .map(this::buildAttachmentAllocated)
+                    .forEach(this::addEvent);
+            attachmentIDCollection = new HashSet<>(assignedAttachmentIDCollection);
+            return;
+        }
+
+        attachmentIDCollection.stream()
+                .filter(attachmentID -> !assignedAttachmentIDCollection.contains(attachmentID))
+                .map(this::buildAttachmentDeallocated)
                 .forEach(this::addEvent);
 
-
-        assignedAttachmentIDList.stream()
-                .filter(attachmentID -> !attachmentIDList.contains(attachmentID))
-                .map(attachmentID -> new AttachmentAllocated(id, attachmentID))
+        assignedAttachmentIDCollection.stream()
+                .filter(attachmentID -> !attachmentIDCollection.contains(attachmentID))
+                .map(this::buildAttachmentAllocated)
                 .forEach(this::addEvent);
-
-        attachmentIDList = new ArrayList<>(assignedAttachmentIDList);
+        attachmentIDCollection = new HashSet<>(assignedAttachmentIDCollection);
     }
 
     public void assignEngine(EngineID assignedEngineID){
+        if (engineID == null && assignedEngineID == null){
+            return;
+        }
+
+        if (assignedEngineID == null){
+            addEvent(new EngineDeallocated(id.value, engineID.value));
+            engineID = null;
+            return;
+        }
+
+        if (engineID == null){
+            addEvent(new EngineAllocated(id.value, assignedEngineID.value));
+            engineID = assignedEngineID;
+            return;
+        }
+
         if (!Objects.equals(engineID, assignedEngineID)) {
-            addEvent(new EngineAllocated(id, assignedEngineID));
-            addEvent(new EngineDeallocated(id, engineID));
+            addEvent(new EngineAllocated(id.value, assignedEngineID.value));
+            addEvent(new EngineDeallocated(id.value, engineID.value));
         }
 
         engineID = assignedEngineID;
     }
+
+    private AttachmentDeallocated buildAttachmentDeallocated(AttachmentID attachmentID){
+        return new AttachmentDeallocated(id.value, attachmentID.value);
+    }
+
+    private AttachmentAllocated buildAttachmentAllocated(AttachmentID attachmentID){
+        return new AttachmentAllocated(id.value, attachmentID.value);
+    }
+
+    void setAttachmentIDCollection(Collection<AttachmentID> attachmentIDCollection) {
+        if (attachmentIDCollection == null){
+            this.attachmentIDCollection = null;
+            return;
+        }
+        this.attachmentIDCollection = new HashSet<>(attachmentIDCollection);
+    }
+
+    public Collection<AttachmentID> getAttachmentIDCollection() {
+        return Collections.unmodifiableCollection(attachmentIDCollection);
+    }
+
 }

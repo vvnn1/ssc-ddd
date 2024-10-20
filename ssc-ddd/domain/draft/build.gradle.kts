@@ -14,6 +14,7 @@ dependencies {
     compileOnly("org.projectlombok:lombok:1.18.22")
     annotationProcessor("org.projectlombok:lombok:1.18.22")
     compileOnly("jakarta.persistence:jakarta.persistence-api:3.1.0")
+    compileOnly("jakarta.annotation:jakarta.annotation-api:3.0.0")
     testImplementation("org.junit.jupiter:junit-jupiter-api:5.8.1")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.8.1")
 }

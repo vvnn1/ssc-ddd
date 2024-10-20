@@ -1,6 +1,10 @@
 package indi.melon.ssc.draft.domain.draft;
 
 import indi.melon.ssc.draft.domain.version.Version;
+import jakarta.persistence.*;
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.time.LocalDateTime;
 
@@ -8,16 +12,38 @@ import java.time.LocalDateTime;
  * @author vvnn1
  * @since 2024/10/1 23:00
  */
+@Getter
+@Setter(AccessLevel.PACKAGE)
+@Entity
 public class Draft {
+    @EmbeddedId
+    @AttributeOverride(
+            name = "value",
+            column = @Column(name = "id")
+    )
     private DraftID id;
     private String content;
+    @Enumerated(EnumType.ORDINAL)
     private DraftType type;
     private String creator;
+    private String modifier;
     private LocalDateTime createTime;
     private LocalDateTime updateTime;
 
+    public Draft() {
+    }
 
-    public void rollback(Version version) {
+    public Draft(DraftID id, DraftType type, String creator) {
+        this.id = id;
+        this.type = type;
+        this.creator = creator;
+        this.createTime = LocalDateTime.now();
+        this.updateTime = LocalDateTime.now();
+    }
 
+    public void rollback(Version version, String modifier) {
+        this.modifier = modifier;
+        this.updateTime = LocalDateTime.now();
+        this.content = version.getContent();
     }
 }
