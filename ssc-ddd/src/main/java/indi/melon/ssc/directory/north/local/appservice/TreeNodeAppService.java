@@ -8,6 +8,7 @@ import indi.melon.ssc.directory.domain.south.factory.TreeNodeFactory;
 import indi.melon.ssc.directory.domain.south.repository.TreeNodeRepository;
 import indi.melon.ssc.directory.north.local.message.CreateNodeCommand;
 import indi.melon.ssc.directory.north.local.message.DropNodeCommand;
+import indi.melon.ssc.directory.north.local.message.MoveNodeCommand;
 import indi.melon.ssc.directory.north.local.message.RenameNodeCommand;
 import indi.melon.ssc.domain.common.cqrs.DomainException;
 import org.springframework.stereotype.Service;
@@ -98,6 +99,25 @@ public class TreeNodeAppService {
         }
 
         treeNodeRepository.save(rootNode);
+    }
+
+    /**
+     * 移动节点
+     * @param moveNodeCommand 移动命令
+     */
+    public void move(MoveNodeCommand moveNodeCommand) {
+        TreeNode rootNode = nonNullRootNodeOf(moveNodeCommand.rootNodeId());
+
+        String treeNodeId = moveNodeCommand.treeNode().id();
+        String parentNodeId = moveNodeCommand.treeNode().newParentId();
+        try {
+            rootNode.move(
+                    new NodeID(treeNodeId),
+                    new NodeID(parentNodeId)
+            );
+        } catch (DomainException e) {
+            throw new ApplicationDomainException("move node " + treeNodeId + " to " + parentNodeId +" failed.", e);
+        }
     }
 
     private TreeNode nonNullRootNodeOf(String rootNodeId) {

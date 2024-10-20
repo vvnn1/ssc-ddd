@@ -9,6 +9,7 @@ import indi.melon.ssc.directory.domain.tree.NodeID;
 import indi.melon.ssc.directory.domain.tree.TreeNode;
 import indi.melon.ssc.directory.north.local.message.CreateNodeCommand;
 import indi.melon.ssc.directory.north.local.message.DropNodeCommand;
+import indi.melon.ssc.directory.north.local.message.MoveNodeCommand;
 import indi.melon.ssc.directory.north.local.message.RenameNodeCommand;
 import indi.melon.ssc.directory.south.repository.MockTreeNodeRepository;
 import indi.melon.ssc.ticket.north.local.appservice.TicketAppService;
@@ -291,6 +292,66 @@ class TreeNodeAppServiceIT extends SscBaseTest {
         assertNull(treeNodeRepository.treeNodeOf(new NodeID(childNodeId)));
         assertNull(treeNodeRepository.treeNodeOf(new NodeID(childNodeId2)));
     }
+
+    @Test
+    public void should_move_node_normally() {
+        String rootNodeId = treeNodeAppService.create(new CreateNodeCommand(
+                null,
+                new CreateNodeCommand.TreeNode(
+                        "IamRootNode",
+                        "directory",
+                        true,
+                        null
+                )
+        ));
+
+
+        String childNodeId1 = treeNodeAppService.create(new CreateNodeCommand(
+                rootNodeId,
+                new CreateNodeCommand.TreeNode(
+                        "IamChildNode1",
+                        "directory",
+                        true,
+                        rootNodeId
+                )
+        ));
+
+        String childNodeId2 = treeNodeAppService.create(new CreateNodeCommand(
+                rootNodeId,
+                new CreateNodeCommand.TreeNode(
+                        "IamChildNode2",
+                        "directory",
+                        true,
+                        rootNodeId
+                )
+        ));
+
+        treeNodeAppService.move(new MoveNodeCommand(
+                rootNodeId,
+                new MoveNodeCommand.TreeNode(
+                        childNodeId2,
+                        childNodeId1
+                )
+        ));
+
+
+        TreeNode rootNode = treeNodeRepository.treeNodeOf(new NodeID(rootNodeId));
+        assertEquals(1, rootNode.getChildNodeList().size());
+        TreeNode childNode1 = rootNode.getChildNodeList().get(0);
+        assertEquals("IamChildNode1", childNode1.getName());
+
+        assertThrows(ApplicationDomainException.class, () -> {
+            treeNodeAppService.move(new MoveNodeCommand(
+                    rootNodeId,
+                    new MoveNodeCommand.TreeNode(
+                            "notExistId",
+                            childNodeId2
+                    )
+            ));
+        });
+
+    }
+
     @TestConfiguration
     static class MockConfiguration {
         @Bean
