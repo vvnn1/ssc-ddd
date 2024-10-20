@@ -10,12 +10,21 @@ import indi.melon.ssc.directory.domain.tree.TreeNode;
 import indi.melon.ssc.directory.north.local.message.CreateNodeCommand;
 import indi.melon.ssc.directory.north.local.message.DropNodeCommand;
 import indi.melon.ssc.directory.north.local.message.RenameNodeCommand;
-import indi.melon.ssc.ticket.domain.south.repository.TicketBoxRepository;
-import indi.melon.ssc.ticket.domain.ticket.BoxID;
-import indi.melon.ssc.ticket.domain.ticket.UuidTicketBox;
+import indi.melon.ssc.directory.south.repository.MockTreeNodeRepository;
+import indi.melon.ssc.ticket.north.local.appservice.TicketAppService;
+import indi.melon.ssc.ticket.north.local.message.TicketCreateCommand;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.TestConfiguration;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Import;
+
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -23,23 +32,31 @@ import static org.junit.jupiter.api.Assertions.*;
  * @author wangmenglong
  * @since 2024/10/17 19:26
  */
+@Import(TreeNodeAppServiceIT.MockConfiguration.class)
 class TreeNodeAppServiceIT extends SscBaseTest {
 
     @Autowired
     private TreeNodeAppService treeNodeAppService;
     @Autowired
     private TreeNodeRepository treeNodeRepository;
-    @Autowired
-    private TicketBoxRepository ticketBoxRepository;
 
+    @MockBean
+    private TicketAppService ticketAppService;
+
+    private static final String TREE_NODE_ID_PREFIX = "MockTreeNodeID-";
     @BeforeEach
-    void setUp() {
-        UuidTicketBox ticketBox = new UuidTicketBox(
-                new BoxID(BizTagProperties.TREE_NODE_BIZ_TAG),
-                10,
-                "test tree node box."
-        );
-        ticketBoxRepository.save(ticketBox);
+    void initMock() {
+        Mockito.clearInvocations(ticketAppService);
+        AtomicInteger integer = new AtomicInteger(0);
+        Mockito.when(ticketAppService.require(new TicketCreateCommand<>(
+                BizTagProperties.TREE_NODE_BIZ_TAG,
+                String.class
+        ))).thenAnswer(new Answer<String>() {
+            @Override
+            public String answer(InvocationOnMock invocation) throws Throwable {
+                return TREE_NODE_ID_PREFIX+integer.incrementAndGet();
+            }
+        });
     }
 
     @Test
@@ -76,9 +93,6 @@ class TreeNodeAppServiceIT extends SscBaseTest {
                 )
         ));
 
-
-
-
         CreateNodeCommand rootNodeCreateCommand = new CreateNodeCommand(
                 null,
                 new CreateNodeCommand.TreeNode(
@@ -91,6 +105,7 @@ class TreeNodeAppServiceIT extends SscBaseTest {
 
         String rootNodeId = treeNodeAppService.create(rootNodeCreateCommand);
         assertNotNull(rootNodeId);
+        assertEquals(TREE_NODE_ID_PREFIX+"1", rootNodeId);
 
         TreeNode rootNode = treeNodeRepository.treeNodeOf(
                 new NodeID(rootNodeId)
@@ -114,6 +129,8 @@ class TreeNodeAppServiceIT extends SscBaseTest {
         );
 
         String childNodeId = treeNodeAppService.create(childNodeCreateCommand);
+        assertEquals(TREE_NODE_ID_PREFIX+"2", childNodeId);
+
         rootNode = treeNodeRepository.treeNodeOf(new NodeID(rootNodeId));
         assertNotNull(rootNode);
         assertEquals(new NodeID(rootNodeId), rootNode.getId());
@@ -274,4 +291,12 @@ class TreeNodeAppServiceIT extends SscBaseTest {
         assertNull(treeNodeRepository.treeNodeOf(new NodeID(childNodeId)));
         assertNull(treeNodeRepository.treeNodeOf(new NodeID(childNodeId2)));
     }
+    @TestConfiguration
+    static class MockConfiguration {
+        @Bean
+        public TreeNodeRepository treeNodeRepository() {
+            return new MockTreeNodeRepository();
+        }
+    }
 }
+

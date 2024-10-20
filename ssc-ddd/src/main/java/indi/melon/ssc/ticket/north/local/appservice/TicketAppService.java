@@ -1,5 +1,6 @@
 package indi.melon.ssc.ticket.north.local.appservice;
 
+import indi.melon.ssc.common.exception.ApplicationDomainException;
 import indi.melon.ssc.common.exception.ApplicationValidationException;
 import indi.melon.ssc.ticket.domain.ticket.BoxID;
 import indi.melon.ssc.ticket.domain.ticket.TicketManager;
@@ -25,10 +26,13 @@ public class TicketAppService {
         String bizTag = command.bizTag();
         Class<T> clazz = command.clazz();
 
-        Object ticket = ticketManager.require(
-                new BoxID(bizTag)
-        );
-
-        return clazz.cast(ticket);
+        try {
+            Object ticket = ticketManager.require(
+                    new BoxID(bizTag)
+            );
+            return clazz.cast(ticket);
+        }catch (Exception e){
+            throw new ApplicationDomainException("generate ticket failed. command:" + command, e);
+        }
     }
 }

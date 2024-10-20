@@ -1,13 +1,17 @@
 package indi.melon.ssc.directory.south.repository;
 
-import indi.melon.ssc.SscTestApplication;
 import indi.melon.ssc.directory.domain.south.repository.TreeNodeRepository;
 import indi.melon.ssc.directory.domain.tree.NodeID;
 import indi.melon.ssc.directory.domain.tree.Sort;
 import indi.melon.ssc.directory.domain.tree.TreeNode;
+import indi.melon.ssc.directory.south.repository.dao.TreeNodeDao;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.FilterType;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Arrays;
 
@@ -24,7 +28,14 @@ import static org.junit.jupiter.api.Assertions.*;
  * @author vvnn1
  * @since 2024/10/7 22:11
  */
-@SpringBootTest(classes = SscTestApplication.class)
+@DataJpaTest(
+        includeFilters = {
+                @ComponentScan.Filter(
+                        type = FilterType.ASSIGNABLE_TYPE,
+                        classes = {TreeNodeRepository.class, TreeNodeDao.class}
+                )
+        }
+)
 class TreeNodeRepositoryIT {
     @Autowired
     private TreeNodeRepository treeNodeRepository;
@@ -88,6 +99,7 @@ class TreeNodeRepositoryIT {
     }
 
     @Test
+    @Transactional(propagation = Propagation.NOT_SUPPORTED)
     public void should_delete_tree_node_cascade(){
         TreeNode rootNode = buildNode(new NodeID("0"), null);
 

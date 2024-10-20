@@ -35,7 +35,7 @@ public class TreeNodeFactoryImpl implements TreeNodeFactory {
                 name,
                 type,
                 new ArrayList<>(),
-                new NodeID(parentNodeId),
+                parentNodeId == null ? null : new NodeID(parentNodeId),
                 expandable
         );
     }

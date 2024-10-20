@@ -7,9 +7,13 @@ import indi.melon.ssc.ticket.domain.ticket.AutoIncrTicketBox;
 import indi.melon.ssc.ticket.domain.ticket.BoxID;
 import indi.melon.ssc.ticket.domain.ticket.UuidTicketBox;
 import indi.melon.ssc.ticket.north.local.message.TicketCreateCommand;
+import indi.melon.ssc.ticket.south.repository.MockTicketBoxRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.TestConfiguration;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Import;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -17,6 +21,7 @@ import static org.junit.jupiter.api.Assertions.*;
  * @author wangmenglong
  * @since 2024/10/17 19:46
  */
+@Import(TicketAppServiceIT.MockConfiguration.class)
 class TicketAppServiceIT extends SscBaseTest {
     @Autowired
     private TicketAppService ticketAppService;
@@ -67,4 +72,11 @@ class TicketAppServiceIT extends SscBaseTest {
         assertEquals(36, treeNodeId.length());
     }
 
+    @TestConfiguration
+    static class MockConfiguration {
+        @Bean
+        public TicketBoxRepository ticketBoxRepository() {
+            return new MockTicketBoxRepository();
+        }
+    }
 }

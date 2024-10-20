@@ -1,11 +1,13 @@
 package indi.melon.ssc.ticket.south.repository;
 
-import indi.melon.ssc.SscTestApplication;
 import indi.melon.ssc.ticket.domain.south.repository.TicketBoxRepository;
 import indi.melon.ssc.ticket.domain.ticket.*;
+import indi.melon.ssc.ticket.south.repository.dao.TicketBoxDao;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.FilterType;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -13,7 +15,14 @@ import static org.junit.jupiter.api.Assertions.*;
  * @author vvnn1
  * @since 2024/10/16 22:18
  */
-@SpringBootTest(classes = SscTestApplication.class)
+@DataJpaTest(
+        includeFilters = {
+                 @ComponentScan.Filter(
+                         type = FilterType.ASSIGNABLE_TYPE,
+                         classes = {TicketBoxRepository.class, TicketBoxDao.class}
+                 )
+        }
+)
 public class TicketBoxRepositoryIT {
     @Autowired
     private TicketBoxRepository ticketBoxRepository;
