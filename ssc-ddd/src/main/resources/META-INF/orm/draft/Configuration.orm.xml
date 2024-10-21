@@ -1,0 +1,31 @@
+<entity-mappings xmlns="http://xmlns.jcp.org/xml/ns/persistence/orm"
+                 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                 xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/persistence/orm http://xmlns.jcp.org/xml/ns/persistence/orm_2_2.xsd"
+                 version="2.2">
+    <entity class="indi.melon.ssc.draft.domain.configuration.Configuration" access="FIELD">
+        <attributes>
+            <embedded-id name="id">
+                <attribute-override name="value">
+                    <column name="id"/>
+                </attribute-override>
+            </embedded-id>
+
+            <basic name="attachmentIDCollection">
+                <convert converter="indi.melon.ssc.draft.domain.configuration.AttachmentIDSetConverter"/>
+            </basic>
+
+            <embedded name="draftID">
+                <attribute-override name="value">
+                    <column name="draftID"/>
+                </attribute-override>
+            </embedded>
+
+            <embedded name="engineID">
+                <attribute-override name="value">
+                    <column name="engineID"/>
+                </attribute-override>
+            </embedded>
+
+        </attributes>
+    </entity>
+</entity-mappings>

@@ -1,6 +1,5 @@
 package indi.melon.ssc.ticket.domain.ticket;
 
-import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
@@ -14,23 +13,15 @@ import java.util.concurrent.ConcurrentLinkedQueue;
  * @author vvnn1
  * @since 2024/4/9 13:41
  */
-@Entity
-@Access(AccessType.FIELD)
-@Inheritance(strategy = InheritanceType.SINGLE_TABLE)
-@DiscriminatorColumn(name = "type", discriminatorType = DiscriminatorType.STRING)
 @Getter
 @Setter(AccessLevel.PACKAGE)
 @ToString
 public abstract class TicketBox<T> implements Iterator<T> {
-    @EmbeddedId
     private BoxID id;
     private Integer ticketNum;
     private String desc;
     private LocalDateTime updateTime;
-    @Column(updatable = false, insertable = false)
-    @Enumerated(value = EnumType.STRING)
     private TicketEnum type;
-    @Transient
     @Getter(AccessLevel.NONE)
     @Setter(AccessLevel.NONE)
     private volatile Queue<T> ticketQueue;

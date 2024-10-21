@@ -1,0 +1,32 @@
+<entity-mappings xmlns="http://xmlns.jcp.org/xml/ns/persistence/orm"
+                 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                 xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/persistence/orm http://xmlns.jcp.org/xml/ns/persistence/orm_2_2.xsd"
+                 version="2.2">
+    <entity class="indi.melon.ssc.directory.domain.tree.TreeNode" access="FIELD">
+        <pre-persist method-name="removeSortIfNotRoot"/>
+        <pre-update method-name="removeSortIfNotRoot"/>
+        <attributes>
+            <embedded-id name="id" />
+            <basic name="name"/>
+            <basic name="type"/>
+            <basic name="createTime"/>
+            <basic name="updateTime"/>
+            <basic name="expandable"/>
+            <basic name="locked"/>
+            <basic name="sort">
+                <convert converter="indi.melon.ssc.directory.domain.tree.SortConverter"/>
+            </basic>
+            <one-to-many name="childNodeList" target-entity="indi.melon.ssc.directory.domain.tree.TreeNode" orphan-removal="true" fetch="EAGER">
+                <join-column name="parentId"/>
+                <cascade>
+                    <cascade-all/>
+                </cascade>
+            </one-to-many>
+            <embedded name="parentId">
+                <attribute-override name="id">
+                    <column name="parentId" updatable="false" insertable="false"/>
+                </attribute-override>
+            </embedded>
+        </attributes>
+    </entity>
+</entity-mappings>

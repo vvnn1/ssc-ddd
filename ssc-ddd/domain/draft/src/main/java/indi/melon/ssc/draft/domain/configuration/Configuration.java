@@ -6,7 +6,6 @@ import indi.melon.ssc.draft.domain.configuration.event.AttachmentAllocated;
 import indi.melon.ssc.draft.domain.configuration.event.AttachmentDeallocated;
 import indi.melon.ssc.draft.domain.configuration.event.EngineAllocated;
 import indi.melon.ssc.draft.domain.configuration.event.EngineDeallocated;
-import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
@@ -21,27 +20,13 @@ import java.util.*;
 @Getter
 @Setter(AccessLevel.PACKAGE)
 @ToString
-@Entity
 public class Configuration extends AbstractAggregateRoot {
-    @EmbeddedId
-    @AttributeOverride(
-            name = "value", column = @Column(name="id")
-    )
     private ConfigurationID id;
-
-    @Embedded
-    @AttributeOverride(
-            name = "value", column = @Column(name="engineID")
-    )
     private EngineID engineID;
 
-    @Convert(converter = AttachmentIDSetConverter.class)
     private Set<AttachmentID> attachmentIDCollection;
 
-    @Embedded
-    @AttributeOverride(
-            name = "value", column = @Column(name="draftID")
-    )
+
     private DraftID draftID;
 
     public Configuration() {

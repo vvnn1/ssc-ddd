@@ -4,7 +4,6 @@ import indi.melon.ssc.directory.domain.tree.exception.IllegalNodeException;
 import indi.melon.ssc.directory.domain.tree.exception.AlreadyExistException;
 import indi.melon.ssc.directory.domain.tree.exception.NotFoundException;
 import indi.melon.ssc.directory.domain.tree.exception.NotSupportException;
-import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
@@ -21,27 +20,17 @@ import java.util.*;
 @Getter
 @Setter(AccessLevel.PACKAGE)
 @ToString
-@Entity
-@Access(AccessType.FIELD)
 public class TreeNode {
-    @EmbeddedId
     private NodeID id;
     private String name;
     private String type;
-    @OneToMany(orphanRemoval=true, cascade = CascadeType.ALL, fetch = FetchType.EAGER)
-    @JoinColumn(name = "parentId")
     private List<TreeNode> childNodeList;
 
-    @Embedded
-    @AttributeOverride(
-            name = "id", column = @Column(name="parentId", updatable = false, insertable = false)
-    )
     private NodeID parentId;
     private LocalDateTime createTime;
     private LocalDateTime updateTime;
     private Boolean expandable;
     private Boolean locked;
-    @Convert(converter =  SortConverter.class)
     private Sort sort;
 
     public TreeNode() {
@@ -324,8 +313,6 @@ public class TreeNode {
         this.sort = sort;
     }
 
-    @PreUpdate
-    @PrePersist
     private void removeSortIfNotRoot() {
         if (!isRootNode()){
             this.sort = null;

@@ -1,10 +1,10 @@
 package indi.melon.ssc.draft.domain.draft;
 
 import indi.melon.ssc.draft.domain.version.Version;
-import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
 
 import java.time.LocalDateTime;
 
@@ -14,16 +14,10 @@ import java.time.LocalDateTime;
  */
 @Getter
 @Setter(AccessLevel.PACKAGE)
-@Entity
+@ToString
 public class Draft {
-    @EmbeddedId
-    @AttributeOverride(
-            name = "value",
-            column = @Column(name = "id")
-    )
     private DraftID id;
     private String content;
-    @Enumerated(EnumType.ORDINAL)
     private DraftType type;
     private String creator;
     private String modifier;

@@ -1,6 +1,5 @@
 package indi.melon.ssc.ticket.domain.ticket;
 
-import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
@@ -15,11 +14,8 @@ import java.util.Collection;
  */
 @Getter
 @Setter(AccessLevel.PACKAGE)
-@Entity
-@DiscriminatorValue("AUTO_INCREMENT")
 public class AutoIncrTicketBox extends TicketBox<Long>{
 
-    @Convert(converter = Str2IntegerConverter.class)
     private Long currentMaxTicket;
 
     public AutoIncrTicketBox() {

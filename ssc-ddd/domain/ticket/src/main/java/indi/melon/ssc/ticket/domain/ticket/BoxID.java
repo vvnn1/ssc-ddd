@@ -1,6 +1,5 @@
 package indi.melon.ssc.ticket.domain.ticket;
 
-import jakarta.persistence.Embeddable;
 import lombok.*;
 
 import java.io.Serial;
@@ -16,7 +15,6 @@ import java.io.Serializable;
 @EqualsAndHashCode
 @AllArgsConstructor
 @NoArgsConstructor
-@Embeddable
 public class BoxID implements Serializable {
     @Serial
     private static final long serialVersionUID = -6134017593036040140L;

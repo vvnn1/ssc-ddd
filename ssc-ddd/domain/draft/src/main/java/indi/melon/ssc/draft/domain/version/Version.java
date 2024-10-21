@@ -1,10 +1,6 @@
 package indi.melon.ssc.draft.domain.version;
 
 import indi.melon.ssc.draft.domain.draft.DraftID;
-import jakarta.persistence.AttributeOverride;
-import jakarta.persistence.Column;
-import jakarta.persistence.EmbeddedId;
-import jakarta.persistence.Entity;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
@@ -20,23 +16,13 @@ import java.time.LocalDateTime;
 @Getter
 @Setter(AccessLevel.PACKAGE)
 @ToString
-@Entity
 public class Version {
-    @EmbeddedId
-    @AttributeOverride(
-            name = "value",
-            column = @Column(name = "id")
-    )
     private VersionID id;
     private String content;
     private LocalDateTime createTime;
     private String creator;
     private String remark;
     private Boolean locked;
-    @AttributeOverride(
-            name = "value",
-            column = @Column(name = "draftID")
-    )
     private DraftID draftID;
 
     public Version() {

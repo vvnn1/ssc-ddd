@@ -1,6 +1,5 @@
 package indi.melon.ssc.draft.domain.version;
 
-import jakarta.persistence.Embeddable;
 import lombok.*;
 
 import java.io.Serial;
@@ -17,7 +16,6 @@ import java.io.Serializable;
 @EqualsAndHashCode
 @AllArgsConstructor
 @NoArgsConstructor
-@Embeddable
 public class VersionID implements Serializable {
     @Serial
     private static final long serialVersionUID = 3061337027256099542L;

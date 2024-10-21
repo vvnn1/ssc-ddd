@@ -1,0 +1,22 @@
+<entity-mappings xmlns="http://xmlns.jcp.org/xml/ns/persistence/orm"
+                 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                 xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/persistence/orm http://xmlns.jcp.org/xml/ns/persistence/orm_2_2.xsd"
+                 version="2.2">
+    <entity class="indi.melon.ssc.draft.domain.draft.Draft" access="FIELD">
+        <attributes>
+            <embedded-id name="id">
+                <attribute-override name="value">
+                    <column name="id"/>
+                </attribute-override>
+            </embedded-id>
+            <basic name="content"/>
+            <basic name="type">
+                <enumerated>ORDINAL</enumerated>
+            </basic>
+            <basic name="creator"/>
+            <basic name="modifier"/>
+            <basic name="createTime"/>
+            <basic name="updateTime"/>
+        </attributes>
+    </entity>
+</entity-mappings>
