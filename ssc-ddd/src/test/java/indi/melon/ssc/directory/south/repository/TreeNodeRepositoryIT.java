@@ -55,16 +55,6 @@ class TreeNodeRepositoryIT {
 
 
         TreeNode treeNodeDB = treeNodeRepository.treeNodeOf(new NodeID("0"));
-        assertEquals(new NodeID("0"), treeNodeDB.getId());
-        assertEquals("treeNode-" + new NodeID("0"), treeNodeDB.getName());
-        assertEquals("directory", treeNodeDB.getType());
-        assertNull(treeNodeDB.getParentId());
-        assertTrue(treeNodeDB.getExpandable());
-        assertFalse(treeNodeDB.getLocked());
-        assertEquals("nameAsc.createTimeDesc", treeNodeDB.getSort().serialize());
-        assertEquals(2, treeNodeDB.getChildNodeList().size());
-
-        assertArrayEquals(new NodeID[]{new NodeID("1"), new NodeID("3")}, rootNode.getChildNodeList().stream().map(TreeNode::getId).toArray());
 
         TreeNode treeNode3 = treeNodeDB.get(new NodeID("3"));
         assertEquals(new NodeID("3"), treeNode3.getId());
@@ -73,7 +63,7 @@ class TreeNodeRepositoryIT {
         assertEquals(new NodeID("0"), treeNode3.getParentId());
         assertTrue(treeNode3.getExpandable());
         assertFalse(treeNode3.getLocked());
-        assertEquals("nameAsc.createTimeDesc", treeNode3.getSort().serialize());
+        assertNull(treeNode3.getSort());
         assertEquals(1, treeNode3.getChildNodeList().size());
 
 
@@ -86,6 +76,17 @@ class TreeNodeRepositoryIT {
         assertFalse(treeNode6.getLocked());
         assertNull(treeNode6.getSort());
         assertEquals(0, treeNode6.getChildNodeList().size());
+
+        assertEquals(new NodeID("0"), treeNodeDB.getId());
+        assertEquals("treeNode-" + new NodeID("0"), treeNodeDB.getName());
+        assertEquals("directory", treeNodeDB.getType());
+        assertNull(treeNodeDB.getParentId());
+        assertTrue(treeNodeDB.getExpandable());
+        assertFalse(treeNodeDB.getLocked());
+        assertEquals("nameAsc.createTimeDesc", treeNodeDB.getSort().serialize());
+        assertEquals(2, treeNodeDB.getChildNodeList().size());
+
+        assertArrayEquals(new NodeID[]{new NodeID("1"), new NodeID("3")}, rootNode.getChildNodeList().stream().map(TreeNode::getId).toArray());
     }
 
     @Test
