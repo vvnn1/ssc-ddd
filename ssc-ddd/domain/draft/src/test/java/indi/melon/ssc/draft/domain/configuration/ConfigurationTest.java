@@ -8,6 +8,7 @@ import indi.melon.ssc.draft.domain.draft.DraftID;
 import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
+import java.util.HashSet;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -38,9 +39,11 @@ public class ConfigurationTest {
 
         configuration.clearDomainEvents();
         configuration.setAttachmentIDCollection(
-                Arrays.asList(
-                        new AttachmentID("AttachmentID1"),
-                        new AttachmentID("AttachmentID2")
+                new HashSet<>(
+                        Arrays.asList(
+                                new AttachmentID("AttachmentID1"),
+                                new AttachmentID("AttachmentID2")
+                        )
                 )
         );
 
@@ -56,9 +59,11 @@ public class ConfigurationTest {
 
         configuration.clearDomainEvents();
         configuration.setAttachmentIDCollection(
-                Arrays.asList(
-                        new AttachmentID("AttachmentID1"),
-                        new AttachmentID("AttachmentID2")
+                new HashSet<>(
+                        Arrays.asList(
+                                new AttachmentID("AttachmentID1"),
+                                new AttachmentID("AttachmentID2")
+                        )
                 )
         );
 

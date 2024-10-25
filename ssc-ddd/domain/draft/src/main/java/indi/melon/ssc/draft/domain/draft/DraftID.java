@@ -10,7 +10,6 @@ import java.io.Serializable;
  * @since 2024/10/2 11:14
  */
 @Getter
-@Setter
 @ToString
 @EqualsAndHashCode
 @AllArgsConstructor

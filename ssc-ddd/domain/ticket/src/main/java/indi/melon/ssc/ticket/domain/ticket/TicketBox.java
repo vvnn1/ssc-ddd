@@ -15,7 +15,6 @@ import java.util.concurrent.ConcurrentLinkedQueue;
  */
 @Getter
 @Setter(AccessLevel.PACKAGE)
-@ToString
 public abstract class TicketBox<T> implements Iterator<T> {
     private BoxID id;
     private Integer ticketNum;

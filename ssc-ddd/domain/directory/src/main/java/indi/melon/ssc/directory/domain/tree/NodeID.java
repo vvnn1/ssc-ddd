@@ -10,7 +10,6 @@ import java.io.Serializable;
  * @since 2024/9/22 22:05
  */
 @Getter
-@Setter
 @ToString
 @EqualsAndHashCode
 @AllArgsConstructor
@@ -18,5 +17,5 @@ import java.io.Serializable;
 public class NodeID implements Serializable {
     @Serial
     private static final long serialVersionUID = 1749092202572956771L;
-    private String id;
+    String id;
 }

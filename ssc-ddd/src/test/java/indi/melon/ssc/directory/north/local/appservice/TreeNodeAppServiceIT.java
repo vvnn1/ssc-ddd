@@ -116,7 +116,7 @@ class TreeNodeAppServiceIT extends SscBaseTest {
         assertEquals(rootNodeCreateCommand.treeNode().name(), rootNode.getName());
         assertEquals(rootNodeCreateCommand.treeNode().type(), rootNode.getType());
         assertEquals(rootNodeCreateCommand.treeNode().expandable(), rootNode.getExpandable());
-        assertTrue(rootNode.getChildNodeList().isEmpty());
+        assertTrue(rootNode.getChildNodeList() == null || rootNode.getChildNodeList().isEmpty());
         assertNull(rootNode.getParentId());
 
         CreateNodeCommand childNodeCreateCommand = new CreateNodeCommand(
@@ -149,7 +149,7 @@ class TreeNodeAppServiceIT extends SscBaseTest {
         assertEquals(childNodeCreateCommand.treeNode().type(), childNode.getType());
         assertEquals(childNodeCreateCommand.treeNode().expandable(), childNode.getExpandable());
         assertEquals(new NodeID(rootNodeId), childNode.getParentId());
-        assertTrue(childNode.getChildNodeList().isEmpty());
+        assertTrue(childNode.getChildNodeList() == null || childNode.getChildNodeList().isEmpty());
         assertFalse(childNode.getLocked());
 
     }

@@ -10,7 +10,6 @@ import java.io.Serializable;
  * @since 2024/4/13 12:45
  */
 @Getter
-@Setter
 @ToString
 @EqualsAndHashCode
 @AllArgsConstructor
@@ -18,5 +17,5 @@ import java.io.Serializable;
 public class BoxID implements Serializable {
     @Serial
     private static final long serialVersionUID = -6134017593036040140L;
-    private String bizTag;
+    String bizTag;
 }

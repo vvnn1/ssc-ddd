@@ -23,10 +23,7 @@ import java.util.*;
 public class Configuration extends AbstractAggregateRoot {
     private ConfigurationID id;
     private EngineID engineID;
-
     private Set<AttachmentID> attachmentIDCollection;
-
-
     private DraftID draftID;
 
     public Configuration() {
@@ -100,14 +97,6 @@ public class Configuration extends AbstractAggregateRoot {
 
     private AttachmentAllocated buildAttachmentAllocated(AttachmentID attachmentID){
         return new AttachmentAllocated(id.value, attachmentID.value);
-    }
-
-    void setAttachmentIDCollection(Collection<AttachmentID> attachmentIDCollection) {
-        if (attachmentIDCollection == null){
-            this.attachmentIDCollection = null;
-            return;
-        }
-        this.attachmentIDCollection = new HashSet<>(attachmentIDCollection);
     }
 
     public Collection<AttachmentID> getAttachmentIDCollection() {

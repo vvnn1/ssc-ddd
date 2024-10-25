@@ -22,11 +22,10 @@ class UuidTicketBoxTest {
     }
 
     private UuidTicketBox createUuidTicketBox(){
-        UuidTicketBox uuidTicketBox = new UuidTicketBox();
-        uuidTicketBox.setId(new BoxID("test_id"));
-        uuidTicketBox.setTicketNum(5);
-        uuidTicketBox.setType(TicketEnum.AUTO_INCREMENT);
-        uuidTicketBox.setDesc("for test");
-        return uuidTicketBox;
+        return new UuidTicketBox(
+                new BoxID("test_id"),
+                5,
+                "for test"
+        );
     }
 }

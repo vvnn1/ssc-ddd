@@ -1,6 +1,5 @@
 package indi.melon.ssc.ticket.domain.ticket;
 
-import indi.melon.ssc.ticket.domain.ticket.exception.TicketBoxCreateFailException;
 import indi.melon.ssc.ticket.domain.south.repository.TicketBoxRepository;
 import indi.melon.ssc.ticket.domain.util.CyclicQueue;
 
@@ -25,14 +24,6 @@ public class BoxManager {
         this.boxContainer = new ConcurrentHashMap<>();
         this.cacheSize = cacheSize;
         this.ticketBoxRepository = ticketBoxRepository;
-    }
-
-    public void createBox(TicketBox<?> ticketBox) {
-        try {
-            ticketBoxRepository.save(ticketBox);
-        }catch (Exception e){
-            throw new TicketBoxCreateFailException(e);
-        }
     }
 
     TicketBox<?> get(BoxID id) {

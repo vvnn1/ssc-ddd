@@ -13,7 +13,6 @@ public class TreeNodeUtil {
                 id,
                 "treeNode-" + id,
                 "directory",
-                new ArrayList<>(),
                 parentId,
                 true
         );

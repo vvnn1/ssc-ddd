@@ -116,14 +116,12 @@ class TicketManagerTest {
         }
 
         private AutoIncrTicketBox createTicketBox(BoxID id){
-            AutoIncrTicketBox autoIncrTicketBox = new AutoIncrTicketBox();
-            autoIncrTicketBox.setId(id);
-            autoIncrTicketBox.setTicketNum(ticketNum);
-            autoIncrTicketBox.setCurrentMaxTicket(currentMaxTicket);
-            autoIncrTicketBox.setDesc("test desc");
-            autoIncrTicketBox.setType(TicketEnum.AUTO_INCREMENT);
-            autoIncrTicketBox.setUpdateTime(LocalDateTime.now());
-            return autoIncrTicketBox;
+            return new AutoIncrTicketBox(
+                    id,
+                    currentMaxTicket,
+                    ticketNum,
+                    "test desc"
+            );
         }
     }
 }

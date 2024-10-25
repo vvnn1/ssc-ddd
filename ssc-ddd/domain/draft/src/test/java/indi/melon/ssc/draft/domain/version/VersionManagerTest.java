@@ -39,24 +39,24 @@ public class VersionManagerTest {
         private final Map<VersionID, Version> dbMap = new HashMap<>();
 
         {
-            Version normalVersion = new Version();
-            normalVersion.setId(new VersionID("1"));
-            normalVersion.setContent("aa");
-            normalVersion.setCreateTime(LocalDateTime.now());
-            normalVersion.setCreator("tester");
-            normalVersion.setRemark("-");
+            Version normalVersion = new Version(
+                    new VersionID("1"),
+                    new DraftID("d1"),
+                    "aa",
+                    "-",
+                    "tester"
+            );
             normalVersion.setLocked(false);
-            normalVersion.setDraftID(new DraftID("d1"));
             dbMap.put(new VersionID("1"), normalVersion);
 
-            Version lockedVersion = new Version();
-            lockedVersion.setId(new VersionID("2"));
-            lockedVersion.setContent("locked");
-            lockedVersion.setCreateTime(LocalDateTime.now());
-            lockedVersion.setCreator("tester");
-            lockedVersion.setRemark("-");
+            Version lockedVersion = new Version(
+                    new VersionID("2"),
+                    new DraftID("d2"),
+                    "locked",
+                    "-",
+                    "tester"
+            );
             lockedVersion.setLocked(true);
-            lockedVersion.setDraftID(new DraftID("d2"));
             dbMap.put(new VersionID("2"), lockedVersion);
         }
 

@@ -32,7 +32,7 @@ class SortTest {
                 buildNode(new NodeID("3"), new NodeID("0"), "node", "2", LocalDateTime.of(2023, 1, 1, 1, 1))
         ).forEach(rootNode::add);
 
-        rootNode.setSort(nameAscAndTypeDesc);
+        rootNode.sortBy(nameAscAndTypeDesc);
 
         assertArrayEquals(rootNode.getChildNodeList().stream().map(TreeNode::getId).toArray(), new Object[]{
                 buildNode(new NodeID("3"), new NodeID("0"), "node", "2", LocalDateTime.of(2023, 1, 1, 1, 1)).getId(),
@@ -45,7 +45,7 @@ class SortTest {
         });
 
         Sort createTimeDescAndNameAsc = Sort.orderBy(Sort.TreeNodeField.createTime, Sort.Order.desc).and(Sort.TreeNodeField.name, Sort.Order.asc);
-        rootNode.setSort(createTimeDescAndNameAsc);
+        rootNode.sortBy(createTimeDescAndNameAsc);
 
         assertArrayEquals(rootNode.getChildNodeList().stream().map(TreeNode::getId).toArray(), new Object[]{
                 treeNode7.getId(),
@@ -83,7 +83,7 @@ class SortTest {
         ).forEach(rootNode::add);
 
         sort = Sort.deserialize("typeDesc.createTimeAsc");
-        rootNode.setSort(sort);
+        rootNode.sortBy(sort);
 
         assertArrayEquals(rootNode.getChildNodeList().stream().map(TreeNode::getId).toArray(), new Object[]{
                 buildNode(new NodeID("3"), new NodeID("0"), "node", "2", LocalDateTime.of(2023, 1, 1, 1, 1)).getId(),
@@ -103,7 +103,6 @@ class SortTest {
         treeNode.setName(name);
         treeNode.setParentId(parentId);
         treeNode.setExpandable(true);
-        treeNode.setChildNodeList(new ArrayList<>());
         treeNode.setCreateTime(createTime);
         treeNode.setType(type);
         return treeNode;

@@ -50,7 +50,7 @@ class TreeNodeRepositoryIT {
                 buildUnExpandableNode(new NodeID("6"), new NodeID("1"))
         ).forEach(rootNode::add);
 
-        rootNode.setSort(Sort.orderBy(name, asc).and(createTime, desc));
+        rootNode.sortBy(Sort.orderBy(name, asc).and(createTime, desc));
         treeNodeRepository.save(rootNode);
 
 
@@ -75,7 +75,7 @@ class TreeNodeRepositoryIT {
         assertFalse(treeNode6.getExpandable());
         assertFalse(treeNode6.getLocked());
         assertNull(treeNode6.getSort());
-        assertEquals(0, treeNode6.getChildNodeList().size());
+        assertTrue(treeNode6.getChildNodeList() == null || treeNode6.getChildNodeList().isEmpty());
 
         assertEquals(new NodeID("0"), treeNodeDB.getId());
         assertEquals("treeNode-" + new NodeID("0"), treeNodeDB.getName());

@@ -42,12 +42,11 @@ class AutoIncrTicketBoxTest {
 
 
     private AutoIncrTicketBox createAutoIncrTicketBox(){
-        AutoIncrTicketBox autoIncrTicketBox = new AutoIncrTicketBox();
-        autoIncrTicketBox.setId(new BoxID("test_id"));
-        autoIncrTicketBox.setCurrentMaxTicket(currentMaxTicket);
-        autoIncrTicketBox.setTicketNum(ticketNum);
-        autoIncrTicketBox.setType(TicketEnum.AUTO_INCREMENT);
-        autoIncrTicketBox.setDesc("for test");
-        return autoIncrTicketBox;
+        return new AutoIncrTicketBox(
+                new BoxID("test_id"),
+                currentMaxTicket,
+                ticketNum,
+                "for test"
+        );
     }
 }
