@@ -45,4 +45,8 @@ public class Version {
     public void unlock() {
         this.locked = false;
     }
+
+    public boolean isLocked() {
+        return Boolean.TRUE.equals(locked);
+    }
 }

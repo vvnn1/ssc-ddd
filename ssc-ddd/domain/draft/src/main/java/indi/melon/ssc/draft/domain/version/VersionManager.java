@@ -20,8 +20,8 @@ public class VersionManager {
             return;
         }
 
-        if (Boolean.TRUE.equals(version.getLocked())) {
-            throw new VersionLockedException("version " + versionID + " is locked, it can be deleted.");
+        if (Boolean.TRUE.equals(version.isLocked())) {
+            throw new VersionLockedException("version " + versionID.value + " is locked, you can not delete it.");
         }
 
         versionRepository.delete(versionID);

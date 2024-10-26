@@ -8,6 +8,7 @@ public class DraftBuildUtil {
     public static Draft buildDraft(){
         Draft draft = new Draft(
                 new DraftID("DraftID1"),
+                "testName",
                 DraftType.BATCH,
                 "creator11"
         );

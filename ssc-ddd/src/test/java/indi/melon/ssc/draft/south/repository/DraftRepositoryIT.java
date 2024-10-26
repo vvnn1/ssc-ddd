@@ -40,6 +40,7 @@ public class DraftRepositoryIT {
         Draft draftDB = draftRepository.draftOf(new DraftID("DraftID1"));
         assertEquals(draft.getId(), draftDB.getId());
         assertEquals(draft.getType(), draftDB.getType());
+        assertEquals(draft.getName(), draftDB.getName());
         assertEquals(draft.getContent(), draftDB.getContent());
         assertEquals(draft.getCreator(), draftDB.getCreator());
         assertEquals(draft.getModifier(), draftDB.getModifier());

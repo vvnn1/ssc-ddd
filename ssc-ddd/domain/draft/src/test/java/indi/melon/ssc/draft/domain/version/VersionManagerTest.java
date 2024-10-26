@@ -6,7 +6,6 @@ import indi.melon.ssc.draft.domain.version.exception.VersionLockedException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 

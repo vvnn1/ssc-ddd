@@ -9,6 +9,7 @@
                     <column name="id"/>
                 </attribute-override>
             </embedded-id>
+            <basic name="name"/>
             <basic name="content"/>
             <basic name="type">
                 <enumerated>ORDINAL</enumerated>
@@ -17,6 +18,7 @@
             <basic name="modifier"/>
             <basic name="createTime"/>
             <basic name="updateTime"/>
+            <basic name="version"/>
         </attributes>
     </entity>
 </entity-mappings>
