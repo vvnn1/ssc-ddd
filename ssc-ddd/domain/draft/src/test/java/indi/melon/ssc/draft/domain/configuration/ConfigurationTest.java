@@ -20,8 +20,7 @@ public class ConfigurationTest {
     @Test
     public void should_assign_attachments_and_publish_events() {
         Configuration configuration = new Configuration(
-                new ConfigurationID("ConfigurationID1"),
-                new DraftID("DraftID1")
+                new ConfigurationID("ConfigurationID1")
         );
 
 
@@ -77,8 +76,7 @@ public class ConfigurationTest {
     @Test
     public void should_assign_engin_and_publish_events() {
         Configuration configuration = new Configuration(
-                new ConfigurationID("ConfigurationID1"),
-                new DraftID("DraftID1")
+                new ConfigurationID("ConfigurationID1")
         );
 
         configuration.assignEngine(new EngineID("EngineID1"));
@@ -97,5 +95,11 @@ public class ConfigurationTest {
         configuration.assignEngine(new EngineID("EngineID2"));
         assertTrue(configuration.domainEvents().contains(new EngineDeallocated("ConfigurationID1", "EngineID1")));
         assertTrue(configuration.domainEvents().contains(new EngineAllocated("ConfigurationID1", "EngineID2")));
+    }
+
+    @Test
+    public void should_build_from_draft_id() {
+        Configuration configuration = new Configuration(new DraftID("testDraft"));
+        assertEquals("testDraft", configuration.getId().value);
     }
 }

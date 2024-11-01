@@ -17,5 +17,5 @@ import java.io.Serializable;
 public class DraftID implements Serializable {
     @Serial
     private static final long serialVersionUID = 2868811892922001290L;
-    private String value;
+    String value;
 }

@@ -1,6 +1,7 @@
 package indi.melon.ssc.draft.domain.draft;
 
-import indi.melon.ssc.draft.domain.draft.exception.RollbackVersionNotMatchException;
+import indi.melon.ssc.draft.domain.draft.exception.NotMatchException;
+import indi.melon.ssc.draft.domain.template.Template;
 import indi.melon.ssc.draft.domain.version.Version;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -21,20 +22,44 @@ public class Draft {
     private DraftID id;
     private String name;
     private String content;
+    private DraftCatalog catalog;
     private DraftType type;
     private String creator;
     private String modifier;
     private LocalDateTime createTime;
     private LocalDateTime updateTime;
-    private Integer version;
 
     public Draft() {
     }
 
-    public Draft(DraftID id, String name, DraftType type, String creator) {
+    Draft(DraftID id, String name, DraftCatalog catalog, String creator) {
         this.id = id;
         this.name = name;
-        this.type = type;
+        this.catalog = catalog;
+        this.creator = creator;
+        this.modifier = creator;
+        this.createTime = LocalDateTime.now();
+        this.updateTime = LocalDateTime.now();
+    }
+
+    public Draft(DraftID id, String name, Template template, String creator) {
+        this.id = id;
+        this.name = name;
+        this.content = template.getContent();
+        this.catalog = template.getCatalog().draftCatalog();
+        this.type = template.getType().draftType();
+        this.creator = creator;
+        this.modifier = creator;
+        this.createTime = LocalDateTime.now();
+        this.updateTime = LocalDateTime.now();
+    }
+
+    public Draft(DraftID id, String name, Draft draft, String creator) {
+        this.id = id;
+        this.name = name;
+        this.content = draft.content;
+        this.catalog = draft.catalog;
+        this.type = draft.type;
         this.creator = creator;
         this.modifier = creator;
         this.createTime = LocalDateTime.now();
@@ -43,7 +68,7 @@ public class Draft {
 
     public void rollback(Version version, String modifier) {
         if (!Objects.equals(id, version.getDraftID())){
-            throw new RollbackVersionNotMatchException("not a match version: "+ version.getId() + " for draft: " + id);
+            throw new NotMatchException("not a match version: "+ version.getId() + " for draft: " + id);
         }
         this.content = version.getContent();
         this.modifier = modifier;
@@ -66,7 +91,7 @@ public class Draft {
         Draft copyDraft = new Draft(
                 id,
                 name,
-                type,
+                catalog,
                 modifier
         );
         copyDraft.content = content;

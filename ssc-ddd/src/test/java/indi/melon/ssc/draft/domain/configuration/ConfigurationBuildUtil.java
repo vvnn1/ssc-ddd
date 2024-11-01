@@ -1,4 +1,4 @@
-package indi.melon.ssc.draft.domain.draft;
+package indi.melon.ssc.draft.domain.configuration;
 
 import indi.melon.ssc.draft.domain.configuration.AttachmentID;
 import indi.melon.ssc.draft.domain.configuration.Configuration;
@@ -14,8 +14,7 @@ import java.util.Arrays;
 public class ConfigurationBuildUtil {
     public static Configuration buildConfiguration(){
         Configuration configuration = new Configuration(
-                new ConfigurationID("testID"),
-                new DraftID("testDraftID")
+                new ConfigurationID("testID")
         );
         configuration.assignEngine(new EngineID("testEngineID"));
         configuration.assignAttachments(

@@ -1,12 +1,14 @@
 package indi.melon.ssc.draft.domain.draft;
 
-import indi.melon.ssc.draft.domain.draft.exception.RollbackVersionNotMatchException;
+import indi.melon.ssc.draft.domain.draft.exception.NotMatchException;
+import indi.melon.ssc.draft.domain.template.Template;
 import indi.melon.ssc.draft.domain.version.Version;
 import indi.melon.ssc.draft.domain.version.VersionID;
 import org.junit.jupiter.api.Test;
 
 import java.time.LocalDateTime;
 
+import static indi.melon.ssc.draft.domain.template.TemplateUtil.buildTemplate;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
@@ -26,7 +28,7 @@ public class DraftTest {
                 "Melon"
         );
 
-        assertThrows(RollbackVersionNotMatchException.class, () -> draft.rollback(badVersion, "vvnn1"));
+        assertThrows(NotMatchException.class, () -> draft.rollback(badVersion, "vvnn1"));
 
         Version version =new Version(
                 new VersionID("VersionID1"),
@@ -81,11 +83,29 @@ public class DraftTest {
         assertTrue(LocalDateTime.now().withSecond(0).withNano(0).isBefore(copyDraft.getUpdateTime()));
     }
 
+    @Test
+    public void should_build_draft_from_template(){
+        Template template = buildTemplate("templateId1", "testContent");
+        Draft draft = new Draft(
+                new DraftID("draftId"),
+                "draftName",
+                template,
+                "creator11"
+        );
+        assertEquals(new DraftID("draftId"), draft.getId());
+        assertEquals("draftName", draft.getName());
+        assertEquals("testContent", draft.getContent());
+        assertEquals(DraftCatalog.STREAM, draft.getCatalog());
+        assertEquals(DraftType.SQL, draft.getType());
+        assertEquals("creator11", draft.getCreator());
+        assertEquals("creator11", draft.getModifier());
+    }
+
     private Draft buildDraft(){
         Draft draft = new Draft(
                 new DraftID("DraftID1"),
                 "testName",
-                DraftType.STREAM,
+                DraftCatalog.STREAM,
                 "Melon"
         );
         draft.setContent("TestContent");

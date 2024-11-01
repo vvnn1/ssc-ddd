@@ -8,6 +8,8 @@ import indi.melon.ssc.draft.domain.configuration.ConfigurationID;
  * @since 2024/10/22 20:00
  */
 public interface ConfigurationRepository {
-    Configuration configurationOf(ConfigurationID configurationID);
+    Configuration configurationOf(ConfigurationID id);
     void save(Configuration configuration);
+
+    void delete(ConfigurationID id);
 }

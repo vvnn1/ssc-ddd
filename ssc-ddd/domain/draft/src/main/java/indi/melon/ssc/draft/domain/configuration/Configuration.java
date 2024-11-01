@@ -1,11 +1,11 @@
 package indi.melon.ssc.draft.domain.configuration;
 
-import indi.melon.ssc.draft.domain.draft.DraftID;
 import indi.melon.ssc.domain.common.cqrs.AbstractAggregateRoot;
 import indi.melon.ssc.draft.domain.configuration.event.AttachmentAllocated;
 import indi.melon.ssc.draft.domain.configuration.event.AttachmentDeallocated;
 import indi.melon.ssc.draft.domain.configuration.event.EngineAllocated;
 import indi.melon.ssc.draft.domain.configuration.event.EngineDeallocated;
+import indi.melon.ssc.draft.domain.draft.DraftID;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
@@ -24,15 +24,17 @@ public class Configuration extends AbstractAggregateRoot {
     private ConfigurationID id;
     private EngineID engineID;
     private Set<AttachmentID> attachmentIDCollection;
-    private DraftID draftID;
-
     public Configuration() {
     }
 
-    public Configuration(ConfigurationID id, DraftID draftID) {
+    Configuration(ConfigurationID id) {
         this.id = id;
-        this.draftID = draftID;
     }
+
+    public Configuration(DraftID draftID) {
+        this.id = new ConfigurationID(draftID.getValue());
+    }
+
     public void assignAttachments(Collection<AttachmentID> assignedAttachmentIDCollection) {
         if (attachmentIDCollection == null && assignedAttachmentIDCollection == null){
             return;
@@ -100,6 +102,9 @@ public class Configuration extends AbstractAggregateRoot {
     }
 
     public Collection<AttachmentID> getAttachmentIDCollection() {
+        if (attachmentIDCollection == null){
+            return Collections.emptySet();
+        }
         return Collections.unmodifiableCollection(attachmentIDCollection);
     }
 

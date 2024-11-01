@@ -36,4 +36,9 @@ public class ConfigurationRepositoryImpl implements ConfigurationRepository {
             throw new ApplicationInfrastructureException("save configuration failed. configuration: " + configuration, e);
         }
     }
+
+    @Override
+    public void delete(ConfigurationID id) {
+
+    }
 }

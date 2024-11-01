@@ -13,7 +13,7 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 
-import static indi.melon.ssc.draft.domain.draft.ConfigurationBuildUtil.buildConfiguration;
+import static indi.melon.ssc.draft.domain.configuration.ConfigurationBuildUtil.buildConfiguration;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
@@ -40,7 +40,6 @@ public class ConfigurationRepositoryIT {
         Configuration configurationDB = configurationRepository.configurationOf(new ConfigurationID("testID"));
 
         assertEquals(configuration.getId(), configurationDB.getId());
-        assertEquals(configuration.getDraftID(), configurationDB.getDraftID());
         assertEquals(configuration.getEngineID(), configurationDB.getEngineID());
         assertEquals(configuration.getAttachmentIDCollection().size(), configurationDB.getAttachmentIDCollection().size());
         assertArrayEquals(

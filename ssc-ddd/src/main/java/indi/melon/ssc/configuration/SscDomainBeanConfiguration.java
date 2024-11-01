@@ -1,5 +1,9 @@
 package indi.melon.ssc.configuration;
 
+import indi.melon.ssc.draft.domain.draft.DraftManager;
+import indi.melon.ssc.draft.domain.south.client.DraftFileTreeClient;
+import indi.melon.ssc.draft.domain.south.repository.ConfigurationRepository;
+import indi.melon.ssc.draft.domain.south.repository.DraftRepository;
 import indi.melon.ssc.ticket.domain.south.repository.TicketBoxRepository;
 import indi.melon.ssc.ticket.domain.ticket.BoxManager;
 import indi.melon.ssc.ticket.domain.ticket.TicketManager;
@@ -20,5 +24,12 @@ public class SscDomainBeanConfiguration {
     @Bean
     public TicketManager ticketManager(BoxManager boxManager) {
         return new TicketManager(boxManager);
+    }
+
+    @Bean
+    public DraftManager draftManager(DraftRepository draftRepository,
+                                     ConfigurationRepository configurationRepository,
+                                     DraftFileTreeClient draftFileTreeClient) {
+        return new DraftManager(draftRepository, configurationRepository, draftFileTreeClient);
     }
 }

@@ -12,10 +12,6 @@ public record RenameNodeCommand(@Nonnull String rootNodeId,
                                 @Nonnull TreeNode treeNode) {
 
     public record TreeNode(@Nonnull String id, @Nonnull String newName) {
-        public TreeNode{
-            if (StringUtils.isBlank(newName)) {
-                throw new ApplicationValidationException("newName should not be blank");
-            }
-        }
+
     }
 }

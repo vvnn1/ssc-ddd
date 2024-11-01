@@ -10,9 +10,15 @@ import org.springframework.stereotype.Component;
 @Component
 public class BizTagProperties {
     public static String TREE_NODE_BIZ_TAG;
+    public static String DRAFT_BIZ_TAG;
 
     @Value("${ssc.biz_tag.tree_node:tree_node_uuid}")
     public void setTreeNodeBizTag(String treeNodeBizTag) {
         TREE_NODE_BIZ_TAG = treeNodeBizTag;
+    }
+
+    @Value("${ssc.biz_tag.draft:draft_uuid}")
+    public void setDraftBizTag(String draftBizTag) {
+        DRAFT_BIZ_TAG = draftBizTag;
     }
 }

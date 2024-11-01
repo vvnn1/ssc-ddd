@@ -8,11 +8,11 @@ import java.io.Serial;
  * @author vvnn1
  * @since 2024/10/26 0:38
  */
-public class RollbackVersionNotMatchException extends DomainException {
+public class NotMatchException extends DomainException {
     @Serial
     private static final long serialVersionUID = -8741397562380295996L;
 
-    public RollbackVersionNotMatchException(String message) {
+    public NotMatchException(String message) {
         super(message);
     }
 }
