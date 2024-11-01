@@ -19,6 +19,7 @@ import java.util.*;
  */
 @Getter
 @Setter(AccessLevel.PACKAGE)
+@ToString
 public class TreeNode {
     private NodeID id;
     private String name;
@@ -136,7 +137,7 @@ public class TreeNode {
         treeNode.updateTime = LocalDateTime.now();
     }
 
-    public void move(NodeID nodeID, NodeID toNodeID){
+    public void move(NodeID nodeID, NodeID parentId){
         if (!isRootNode()) {
             throw new IllegalNodeException("node " + name + " is not root node, it should not rename others.");
         }
@@ -151,9 +152,9 @@ public class TreeNode {
             throw new IllegalNodeException("node " + nodeID + " should specify a parent node, but its null.");
         }
 
-        TreeNode newParentNode = findTreeNode(toNodeID);
+        TreeNode newParentNode = findTreeNode(parentId);
         if (newParentNode == null) {
-            throw new NotFoundException("node " + toNodeID + " is not found.");
+            throw new NotFoundException("node " + parentId + " is not found.");
         }
         newParentNode.allocate(node);
         oldParentNode.deallocate(nodeID);
@@ -240,7 +241,7 @@ public class TreeNode {
         return Collections.unmodifiableList(childNodeList);
     }
 
-    private boolean isRootNode() {
+    boolean isRootNode() {
         return parentId == null;
     }
 
@@ -262,6 +263,9 @@ public class TreeNode {
         this.sort = sort;
     }
 
+    /**
+     * {@see META-INF/orm/directory/TreeNode.orm.xml}
+     */
     private void removeSortIfNotRoot() {
         if (!isRootNode()){
             this.sort = null;

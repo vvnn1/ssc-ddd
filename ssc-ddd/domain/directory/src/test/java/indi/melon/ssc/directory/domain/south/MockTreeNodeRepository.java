@@ -1,4 +1,4 @@
-package indi.melon.ssc.directory.south.repository;
+package indi.melon.ssc.directory.domain.south;
 
 import indi.melon.ssc.directory.domain.south.repository.TreeNodeRepository;
 import indi.melon.ssc.directory.domain.tree.NodeID;
@@ -8,7 +8,7 @@ import java.util.*;
 
 /**
  * @author vvnn1
- * @since 2024/10/19 20:22
+ * @since 2024/10/26 14:40
  */
 public class MockTreeNodeRepository implements TreeNodeRepository {
     private Map<NodeID, TreeNode> db = new HashMap<>();
@@ -28,7 +28,7 @@ public class MockTreeNodeRepository implements TreeNodeRepository {
             new ArrayList<>(db.values())
                     .stream()
                     .filter(n -> node.getId().equals(n.getParentId()))
-                    .forEach(n -> delete(n.getId()));
+                    .forEach(n -> db.remove(n.getId()));
 
 
             if (node.getChildNodeList() != null && !node.getChildNodeList().isEmpty()) {

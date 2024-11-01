@@ -42,7 +42,7 @@ public class TreeNodeAppService {
             );
 
             treeNodeRepository.save(rootNode);
-            return rootNode.getId().getId();
+            return rootNode.getId().getValue();
         }
 
         TreeNode rootNode = nonNullRootNodeOf(createCommand.rootNodeId());
@@ -61,7 +61,7 @@ public class TreeNodeAppService {
         }
 
         treeNodeRepository.save(rootNode);
-        return treeNode.getId().getId();
+        return treeNode.getId().getValue();
     }
 
     /**

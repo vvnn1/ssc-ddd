@@ -276,12 +276,6 @@ class TreeNodeTest {
         assertThrows(NotSupportException.class, () -> rootNode.move(new NodeID("14"), new NodeID("10")));
     }
 
-    private TreeNode buildUnExpandableNode(NodeID id, NodeID parentId){
-        TreeNode treeNode = buildNode(id, parentId);
-        treeNode.setExpandable(Boolean.FALSE);
-        return treeNode;
-    }
-
     private boolean isCreateTimeAsc(TreeNode rootNode) {
         LinkedList<TreeNode> queue = new LinkedList<>(Collections.singleton(rootNode));
         while (!queue.isEmpty()) {
@@ -310,6 +304,12 @@ class TreeNodeTest {
         }
 
         return true;
+    }
+
+    private TreeNode buildUnExpandableNode(NodeID id, NodeID parentId){
+        TreeNode treeNode = buildNode(id, parentId);
+        treeNode.setExpandable(Boolean.FALSE);
+        return treeNode;
     }
 
     private TreeNode buildTimeNode(NodeID id, NodeID parentId, LocalDateTime localDateTime) {

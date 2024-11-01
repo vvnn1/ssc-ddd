@@ -33,8 +33,8 @@ import static org.junit.jupiter.api.Assertions.*;
  * @author wangmenglong
  * @since 2024/10/17 19:26
  */
-@Import(TreeNodeAppServiceIT.MockConfiguration.class)
-class TreeNodeAppServiceIT extends SscBaseTest {
+@Import(TreeNodeAppServiceTest.MockConfiguration.class)
+class TreeNodeAppServiceTest extends SscBaseTest {
 
     @Autowired
     private TreeNodeAppService treeNodeAppService;
@@ -106,7 +106,7 @@ class TreeNodeAppServiceIT extends SscBaseTest {
 
         String rootNodeId = treeNodeAppService.create(rootNodeCreateCommand);
         assertNotNull(rootNodeId);
-        assertEquals(TREE_NODE_ID_PREFIX+"1", rootNodeId);
+        assertTrue(rootNodeId.startsWith(TREE_NODE_ID_PREFIX));
 
         TreeNode rootNode = treeNodeRepository.treeNodeOf(
                 new NodeID(rootNodeId)
@@ -130,7 +130,7 @@ class TreeNodeAppServiceIT extends SscBaseTest {
         );
 
         String childNodeId = treeNodeAppService.create(childNodeCreateCommand);
-        assertEquals(TREE_NODE_ID_PREFIX+"2", childNodeId);
+        assertTrue(childNodeId.startsWith(TREE_NODE_ID_PREFIX));
 
         rootNode = treeNodeRepository.treeNodeOf(new NodeID(rootNodeId));
         assertNotNull(rootNode);

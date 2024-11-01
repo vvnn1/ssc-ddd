@@ -6,7 +6,11 @@
         <pre-persist method-name="removeSortIfNotRoot"/>
         <pre-update method-name="removeSortIfNotRoot"/>
         <attributes>
-            <embedded-id name="id" />
+            <embedded-id name="id">
+                <attribute-override name="value">
+                    <column name="id"/>
+                </attribute-override>
+            </embedded-id>
             <basic name="name"/>
             <basic name="type"/>
             <basic name="createTime"/>
@@ -23,7 +27,7 @@
                 </cascade>
             </one-to-many>
             <embedded name="parentId">
-                <attribute-override name="id">
+                <attribute-override name="value">
                     <column name="parentId" updatable="false" insertable="false"/>
                 </attribute-override>
             </embedded>
