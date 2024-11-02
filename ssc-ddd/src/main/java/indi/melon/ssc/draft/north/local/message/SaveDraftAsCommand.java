@@ -6,7 +6,7 @@ import jakarta.annotation.Nonnull;
  * @author wangmenglong
  * @since 2024/10/31 20:20
  */
-public record SaveAsCommand(
+public record SaveDraftAsCommand(
         @Nonnull String name,
         @Nonnull String fromDraftId,
         @Nonnull Directory directory,

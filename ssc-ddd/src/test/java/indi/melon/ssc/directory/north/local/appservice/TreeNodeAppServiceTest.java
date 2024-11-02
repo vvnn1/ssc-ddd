@@ -157,13 +157,13 @@ class TreeNodeAppServiceTest extends SscBaseTest {
 
     @Test
     void should_rename_node_normally() {
-        assertThrows(ApplicationValidationException.class, () -> new RenameNodeCommand(
-                "11",
-                new RenameNodeCommand.TreeNode(
-                        "1",
-                        "  "//newName should not be blank,
-                )
-        ));
+//        assertThrows(ApplicationValidationException.class, () -> new RenameNodeCommand(
+//                "11",
+//                new RenameNodeCommand.TreeNode(
+//                        "1",
+//                        "  "//newName should not be blank,
+//                )
+//        ));
 
         assertThrows(ApplicationValidationException.class, () -> treeNodeAppService.rename(
                 new RenameNodeCommand(

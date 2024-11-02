@@ -42,10 +42,16 @@ public class DraftManagerTest {
         );
 
         Configuration notMatchConfiguration = buildConfiguration("ConfigurationID");
-        assertThrows(NotMatchException.class, () -> draftManager.create(draft, notMatchConfiguration, "notMatch"));
+        assertThrows(NotMatchException.class, () -> draftManager.create(draft, notMatchConfiguration, new Directory(
+                "DirectoryID",
+                "rootDirectoryID"
+        )));
 
         Configuration configuration = buildConfiguration("DraftID");
-        draftManager.create(draft, configuration, "DirectoryID");
+        draftManager.create(draft, configuration, new Directory(
+                "DirectoryID",
+                "rootDirectoryID"
+        ));
 
         Draft draftDB = draftRepository.draftOf(new DraftID("DraftID"));
         assertEquals(new DraftID("DraftID"), draftDB.getId());
@@ -57,6 +63,7 @@ public class DraftManagerTest {
         assertEquals(new DraftID("DraftID"), draftFile.getId());
         assertEquals("testDraftName", draftFile.getName());
         assertEquals("DirectoryID", draftFileClient.getDirectoryId());
+        assertEquals("rootDirectoryID", draftFileClient.getRootDirectoryId());
         assertEquals("STREAM", draftFile.getCatalog().name());
 
         Configuration configurationDB = configurationRepository.configurationOf(new ConfigurationID("DraftID"));

@@ -17,8 +17,9 @@ import indi.melon.ssc.draft.domain.south.repository.DraftRepository;
 import indi.melon.ssc.draft.domain.south.repository.TemplateRepository;
 import indi.melon.ssc.draft.domain.template.Template;
 import indi.melon.ssc.draft.domain.template.TemplateID;
-import indi.melon.ssc.draft.north.local.message.SaveAsCommand;
+import indi.melon.ssc.draft.north.local.message.SaveDraftAsCommand;
 import indi.melon.ssc.draft.north.local.message.CreateDraftCommand;
+import indi.melon.ssc.draft.north.local.message.SaveDraftCommand;
 import org.springframework.stereotype.Service;
 
 /**
@@ -89,10 +90,10 @@ public class DraftAppService {
 
     /**
      * 另存为模板
-     * @param saveAsCommand 另存为命令
+     * @param saveDraftAsCommand 另存为命令
      */
-    public String saveAs(SaveAsCommand saveAsCommand) {
-        String fromDraftId = saveAsCommand.fromDraftId();
+    public String saveAs(SaveDraftAsCommand saveDraftAsCommand) {
+        String fromDraftId = saveDraftAsCommand.fromDraftId();
 
         DraftID draftID = new DraftID(fromDraftId);
         Draft draft = draftRepository.draftOf(draftID);
@@ -100,9 +101,9 @@ public class DraftAppService {
             throw new ApplicationValidationException("not found draft: " + fromDraftId);
         }
         Draft copyDraft = draftFactory.create(
-                saveAsCommand.name(),
+                saveDraftAsCommand.name(),
                 draft,
-                saveAsCommand.creator()
+                saveDraftAsCommand.creator()
         );
 
         Configuration configuration = configurationRepository.configurationOf(
@@ -115,14 +116,32 @@ public class DraftAppService {
                     copyDraft,
                     copyConfiguration,
                     new Directory(
-                            saveAsCommand.directory().parentId(),
-                            saveAsCommand.directory().rootId()
+                            saveDraftAsCommand.directory().parentId(),
+                            saveDraftAsCommand.directory().rootId()
                     )
             );
         } catch (DomainException e){
-            throw new ApplicationDomainException("copy draft failed. command: " + saveAsCommand, e);
+            throw new ApplicationDomainException("copy draft failed. command: " + saveDraftAsCommand, e);
         }
 
         return copyDraft.getId().getValue();
+    }
+
+    /**
+     * 保存草稿
+     * @param saveDraftCommand 保存命令
+     */
+    void save(SaveDraftCommand saveDraftCommand) {
+        Draft draft = draftRepository.draftOf(new DraftID(saveDraftCommand.draftId()));
+        if (draft == null){
+            throw new ApplicationValidationException("not found draft: " + saveDraftCommand.draftId());
+        }
+
+        draft.editContent(
+                saveDraftCommand.content(),
+                saveDraftCommand.modifier()
+        );
+
+        draftRepository.save(draft);
     }
 }

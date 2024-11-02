@@ -10,11 +10,13 @@ import indi.melon.ssc.draft.domain.draft.Draft;
 public class MockDraftFileClient implements DraftFileTreeClient {
     private Draft draft;
     private String directoryId;
+    private String rootDirectoryId;
 
     @Override
     public void createFileNode(Directory directory, Draft draft) {
         this.draft = draft;
-        this.directoryId = directoryId;
+        this.directoryId = directory.id();
+        this.rootDirectoryId = directory.rootId();
     }
 
     public Draft getDraft(){
@@ -23,5 +25,9 @@ public class MockDraftFileClient implements DraftFileTreeClient {
 
     public String getDirectoryId() {
         return directoryId;
+    }
+
+    public String getRootDirectoryId() {
+        return rootDirectoryId;
     }
 }

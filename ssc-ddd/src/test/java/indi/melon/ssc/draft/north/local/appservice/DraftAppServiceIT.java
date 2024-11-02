@@ -13,8 +13,9 @@ import indi.melon.ssc.draft.domain.south.repository.ConfigurationRepository;
 import indi.melon.ssc.draft.domain.south.repository.DraftRepository;
 import indi.melon.ssc.draft.domain.south.repository.TemplateRepository;
 import indi.melon.ssc.draft.domain.template.*;
-import indi.melon.ssc.draft.north.local.message.SaveAsCommand;
+import indi.melon.ssc.draft.north.local.message.SaveDraftAsCommand;
 import indi.melon.ssc.draft.north.local.message.CreateDraftCommand;
+import indi.melon.ssc.draft.north.local.message.SaveDraftCommand;
 import indi.melon.ssc.draft.south.client.MockDraftFileClient;
 import indi.melon.ssc.draft.south.factory.MockConfigurationFactory;
 import indi.melon.ssc.draft.south.factory.MockDraftFactory;
@@ -162,10 +163,10 @@ public class DraftAppServiceIT {
     @Test
     public void should_save_as_normally() {
         assertThrows(ApplicationValidationException.class, () -> draftAppService.saveAs(
-                new SaveAsCommand(
+                new SaveDraftAsCommand(
                         "testDraft",
                         "notFoundDraftId",
-                        new SaveAsCommand.Directory(
+                        new SaveDraftAsCommand.Directory(
                                 "rootId",
                                 "parentId"
                         ),
@@ -174,10 +175,10 @@ public class DraftAppServiceIT {
         ));
 
         String draftId = draftAppService.saveAs(
-                new SaveAsCommand(
+                new SaveDraftAsCommand(
                         "testDraft",
                         "draftId_1",
-                        new SaveAsCommand.Directory(
+                        new SaveDraftAsCommand.Directory(
                                 "rootId",
                                 "parentId"
                         ),
@@ -201,5 +202,30 @@ public class DraftAppServiceIT {
         assertEquals(new ConfigurationID("DRAFT_PREFIX_copy_testDraft"), configuration.getId());
         assertEquals(new EngineID("testEngine11"), configuration.getEngineID());
         assertTrue(configuration.getAttachmentIDCollection().contains(new AttachmentID("AttachmentID222")));
+    }
+
+    @Test
+    public void should_save_draft_normally(){
+        assertThrows(ApplicationValidationException.class, () -> draftAppService.save(
+                new SaveDraftCommand(
+                        "notExistDraftId",
+                        "testContent",
+                        "vvnn1"
+                )
+        ));
+
+        draftAppService.save(
+                new SaveDraftCommand(
+                        "draftId_1",
+                        "newContent",
+                        "melon"
+                )
+        );
+
+        Draft draft = draftRepository.draftOf(new DraftID("draftId_1"));
+        assertNotNull(draft);
+        assertEquals(new DraftID("draftId_1"), draft.getId());
+        assertEquals("newContent", draft.getContent());
+        assertEquals("melon", draft.getModifier());
     }
 }
