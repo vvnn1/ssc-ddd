@@ -51,26 +51,26 @@ public class DraftAppService {
 
     /**
      * 从模板创建草稿
-     * @param createCommand 创建命令
+     * @param command 创建命令
      */
-    public String create(CreateDraftCommand createCommand) {
+    public String create(CreateDraftCommand command) {
         Template template = templateRepository.templateOf(
-                new TemplateID(createCommand.templateId())
+                new TemplateID(command.templateId())
         );
 
         if (template == null) {
-            throw new ApplicationValidationException("not found template by id: " + createCommand.templateId());
+            throw new ApplicationValidationException("not found template by id: " + command.templateId());
         }
 
         Draft draft = draftFactory.create(
-                createCommand.name(),
+                command.name(),
                 template,
-                createCommand.creator()
+                command.creator()
         );
 
         Configuration configuration = new Configuration(draft.getId());
         configuration.assignEngine(
-                new EngineID(createCommand.engineId())
+                new EngineID(command.engineId())
         );
 
         try {
@@ -78,11 +78,11 @@ public class DraftAppService {
                     draft,
                     configuration,
                     new Directory(
-                        createCommand.directory().parentId(),
-                        createCommand.directory().rootId()
+                        command.directory().parentId(),
+                        command.directory().rootId()
                     ));
         } catch (DomainException e){
-            throw new ApplicationDomainException("create draft failed. command: " + createCommand, e);
+            throw new ApplicationDomainException("create draft failed. command: " + command, e);
         }
 
         return draft.getId().getValue();
@@ -90,10 +90,10 @@ public class DraftAppService {
 
     /**
      * 另存为模板
-     * @param saveDraftAsCommand 另存为命令
+     * @param command 另存为命令
      */
-    public String saveAs(SaveDraftAsCommand saveDraftAsCommand) {
-        String fromDraftId = saveDraftAsCommand.fromDraftId();
+    public String saveAs(SaveDraftAsCommand command) {
+        String fromDraftId = command.fromDraftId();
 
         DraftID draftID = new DraftID(fromDraftId);
         Draft draft = draftRepository.draftOf(draftID);
@@ -101,9 +101,9 @@ public class DraftAppService {
             throw new ApplicationValidationException("not found draft: " + fromDraftId);
         }
         Draft copyDraft = draftFactory.create(
-                saveDraftAsCommand.name(),
+                command.name(),
                 draft,
-                saveDraftAsCommand.creator()
+                command.creator()
         );
 
         Configuration configuration = configurationRepository.configurationOf(
@@ -116,12 +116,12 @@ public class DraftAppService {
                     copyDraft,
                     copyConfiguration,
                     new Directory(
-                            saveDraftAsCommand.directory().parentId(),
-                            saveDraftAsCommand.directory().rootId()
+                            command.directory().parentId(),
+                            command.directory().rootId()
                     )
             );
         } catch (DomainException e){
-            throw new ApplicationDomainException("copy draft failed. command: " + saveDraftAsCommand, e);
+            throw new ApplicationDomainException("copy draft failed. command: " + command, e);
         }
 
         return copyDraft.getId().getValue();
@@ -129,17 +129,17 @@ public class DraftAppService {
 
     /**
      * 保存草稿
-     * @param saveDraftCommand 保存命令
+     * @param command 保存命令
      */
-    void save(SaveDraftCommand saveDraftCommand) {
-        Draft draft = draftRepository.draftOf(new DraftID(saveDraftCommand.draftId()));
+    void save(SaveDraftCommand command) {
+        Draft draft = draftRepository.draftOf(new DraftID(command.draftId()));
         if (draft == null){
-            throw new ApplicationValidationException("not found draft: " + saveDraftCommand.draftId());
+            throw new ApplicationValidationException("not found draft: " + command.draftId());
         }
 
         draft.editContent(
-                saveDraftCommand.content(),
-                saveDraftCommand.modifier()
+                command.content(),
+                command.modifier()
         );
 
         draftRepository.save(draft);
