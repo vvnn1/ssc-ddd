@@ -14,7 +14,7 @@ public class VersionManager {
         this.versionRepository = versionRepository;
     }
 
-    void delete(VersionID versionID) {
+    public void delete(VersionID versionID) {
         Version version = versionRepository.versionOf(versionID);
         if (version == null){
             return;
