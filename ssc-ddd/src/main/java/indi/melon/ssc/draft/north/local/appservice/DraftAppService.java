@@ -15,11 +15,12 @@ import indi.melon.ssc.draft.domain.south.factory.DraftFactory;
 import indi.melon.ssc.draft.domain.south.repository.ConfigurationRepository;
 import indi.melon.ssc.draft.domain.south.repository.DraftRepository;
 import indi.melon.ssc.draft.domain.south.repository.TemplateRepository;
+import indi.melon.ssc.draft.domain.south.repository.VersionRepository;
 import indi.melon.ssc.draft.domain.template.Template;
 import indi.melon.ssc.draft.domain.template.TemplateID;
-import indi.melon.ssc.draft.north.local.message.SaveDraftAsCommand;
-import indi.melon.ssc.draft.north.local.message.CreateDraftCommand;
-import indi.melon.ssc.draft.north.local.message.SaveDraftCommand;
+import indi.melon.ssc.draft.domain.version.Version;
+import indi.melon.ssc.draft.domain.version.VersionID;
+import indi.melon.ssc.draft.north.local.message.*;
 import org.springframework.stereotype.Service;
 
 /**
@@ -34,19 +35,21 @@ public class DraftAppService {
     private final DraftRepository draftRepository;
     private final ConfigurationFactory configurationFactory;
     private final ConfigurationRepository configurationRepository;
+    private final VersionRepository versionRepository;
 
     public DraftAppService(DraftManager draftManager,
                            DraftFactory draftFactory,
                            TemplateRepository templateRepository,
                            DraftRepository draftRepository,
                            ConfigurationFactory configurationFactory,
-                           ConfigurationRepository configurationRepository) {
+                           ConfigurationRepository configurationRepository, VersionRepository versionRepository) {
         this.draftManager = draftManager;
         this.draftFactory = draftFactory;
         this.templateRepository = templateRepository;
         this.draftRepository = draftRepository;
         this.configurationFactory = configurationFactory;
         this.configurationRepository = configurationRepository;
+        this.versionRepository = versionRepository;
     }
 
     /**
@@ -59,7 +62,7 @@ public class DraftAppService {
         );
 
         if (template == null) {
-            throw new ApplicationValidationException("not found template by id: " + command.templateId());
+            throw new ApplicationValidationException("not found template by draftId: " + command.templateId());
         }
 
         Draft draft = draftFactory.create(
@@ -95,11 +98,7 @@ public class DraftAppService {
     public String saveAs(SaveDraftAsCommand command) {
         String fromDraftId = command.fromDraftId();
 
-        DraftID draftID = new DraftID(fromDraftId);
-        Draft draft = draftRepository.draftOf(draftID);
-        if (draft == null){
-            throw new ApplicationValidationException("not found draft: " + fromDraftId);
-        }
+        Draft draft = nonNullDraft(fromDraftId);
         Draft copyDraft = draftFactory.create(
                 command.name(),
                 draft,
@@ -131,11 +130,8 @@ public class DraftAppService {
      * 保存草稿
      * @param command 保存命令
      */
-    void save(SaveDraftCommand command) {
-        Draft draft = draftRepository.draftOf(new DraftID(command.draftId()));
-        if (draft == null){
-            throw new ApplicationValidationException("not found draft: " + command.draftId());
-        }
+    public void save(SaveDraftCommand command) {
+        Draft draft = nonNullDraft(command.draftId());
 
         draft.editContent(
                 command.content(),
@@ -143,5 +139,46 @@ public class DraftAppService {
         );
 
         draftRepository.save(draft);
+    }
+
+    /**
+     * 草稿回滚指定版本
+     * @param command 回滚命令
+     */
+    public void rollback(RollbackDraftCommand command) {
+        Draft draft = nonNullDraft(command.draftId());
+
+        Version version = versionRepository.versionOf(
+                new VersionID(command.versionId())
+        );
+        if (version == null){
+            throw new ApplicationValidationException("not found version: " + command.versionId());
+        }
+
+        try {
+            draft.rollback(version, command.modifier());
+        } catch (DomainException e){
+            throw new ApplicationDomainException("rollback draft failed. command: " + command, e);
+        }
+
+        draftRepository.save(draft);
+    }
+
+
+    /**
+     * 非空草稿获取，为空则抛异常
+     * @param draftId 草稿id
+     * @return 草稿
+     */
+    private Draft nonNullDraft(String draftId) {
+        Draft draft = draftRepository.draftOf(
+                new DraftID(draftId)
+        );
+
+        if (draft == null) {
+            throw new ApplicationValidationException("not found draft: " + draftId);
+        }
+
+        return draft;
     }
 }

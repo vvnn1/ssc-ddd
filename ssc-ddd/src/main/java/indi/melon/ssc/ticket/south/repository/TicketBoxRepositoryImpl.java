@@ -24,7 +24,7 @@ public class TicketBoxRepositoryImpl implements TicketBoxRepository {
         try {
             return ticketBoxDao.findById(id).orElse(null);
         }catch (Exception e){
-            throw new ApplicationInfrastructureException("find ticket box by id: " + id + " failed.", e);
+            throw new ApplicationInfrastructureException("find ticket box by draftId: " + id + " failed.", e);
         }
     }
 

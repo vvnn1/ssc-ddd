@@ -13,7 +13,7 @@ public class MockDraftFileClient implements DraftFileTreeClient {
     private String rootDirectoryId;
 
     @Override
-    public void createFileNode(Directory directory, Draft draft) {
+    public void create(Directory directory, Draft draft) {
         this.draft = draft;
         this.directoryId = directory.id();
         this.rootDirectoryId = directory.rootId();

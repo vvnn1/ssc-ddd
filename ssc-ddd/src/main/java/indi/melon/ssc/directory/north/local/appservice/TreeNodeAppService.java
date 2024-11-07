@@ -126,7 +126,7 @@ public class TreeNodeAppService {
         );
 
         if (rootNode == null) {
-            throw new ApplicationValidationException("can not found root node by id " + rootNodeId + ".");
+            throw new ApplicationValidationException("can not found root node by draftId " + rootNodeId + ".");
         }
         return rootNode;
     }

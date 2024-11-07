@@ -30,11 +30,11 @@ public class VersionAppService {
      */
     public void lock(LockVersionCommand command) {
         Version version = versionRepository.versionOf(
-                new VersionID(command.id())
+                new VersionID(command.versionId())
         );
 
         if (version == null){
-            throw new ApplicationValidationException("not found version by id: " + command.id());
+            throw new ApplicationValidationException("not found version by draftId: " + command.versionId());
         }
 
         version.lock();
@@ -47,11 +47,11 @@ public class VersionAppService {
      */
     public void unlock(UnLockVersionCommand command) {
         Version version = versionRepository.versionOf(
-                new VersionID(command.id())
+                new VersionID(command.versionId())
         );
 
         if (version == null){
-            throw new ApplicationValidationException("not found version by id: " + command.id());
+            throw new ApplicationValidationException("not found version by versionId: " + command.versionId());
         }
 
         version.unlock();

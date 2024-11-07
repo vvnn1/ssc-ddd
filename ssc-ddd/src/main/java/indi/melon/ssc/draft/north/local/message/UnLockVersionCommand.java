@@ -6,5 +6,5 @@ import jakarta.annotation.Nonnull;
  * @author wangmenglong
  * @since 2024/11/5 18:36
  */
-public record UnLockVersionCommand(@Nonnull String id) {
+public record UnLockVersionCommand(@Nonnull String versionId) {
 }

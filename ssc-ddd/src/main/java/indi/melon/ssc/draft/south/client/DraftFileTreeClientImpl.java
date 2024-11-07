@@ -13,7 +13,7 @@ import org.springframework.stereotype.Component;
 public class DraftFileTreeClientImpl implements DraftFileTreeClient {
 
     @Override
-    public void createFileNode(Directory directory, Draft draft) {
+    public void create(Directory directory, Draft draft) {
 
     }
 }

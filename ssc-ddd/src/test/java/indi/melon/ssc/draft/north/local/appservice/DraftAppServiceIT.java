@@ -1,5 +1,6 @@
 package indi.melon.ssc.draft.north.local.appservice;
 
+import indi.melon.ssc.common.exception.ApplicationDomainException;
 import indi.melon.ssc.common.exception.ApplicationValidationException;
 import indi.melon.ssc.draft.domain.configuration.AttachmentID;
 import indi.melon.ssc.draft.domain.configuration.Configuration;
@@ -12,22 +13,24 @@ import indi.melon.ssc.draft.domain.south.factory.DraftFactory;
 import indi.melon.ssc.draft.domain.south.repository.ConfigurationRepository;
 import indi.melon.ssc.draft.domain.south.repository.DraftRepository;
 import indi.melon.ssc.draft.domain.south.repository.TemplateRepository;
+import indi.melon.ssc.draft.domain.south.repository.VersionRepository;
 import indi.melon.ssc.draft.domain.template.*;
-import indi.melon.ssc.draft.north.local.message.SaveDraftAsCommand;
-import indi.melon.ssc.draft.north.local.message.CreateDraftCommand;
-import indi.melon.ssc.draft.north.local.message.SaveDraftCommand;
-import indi.melon.ssc.draft.south.client.MockDraftFileClient;
+import indi.melon.ssc.draft.domain.version.Version;
+import indi.melon.ssc.draft.domain.version.VersionID;
+import indi.melon.ssc.draft.north.local.message.*;
 import indi.melon.ssc.draft.south.factory.MockConfigurationFactory;
 import indi.melon.ssc.draft.south.factory.MockDraftFactory;
 import indi.melon.ssc.draft.south.repository.MockConfigurationRepository;
 import indi.melon.ssc.draft.south.repository.MockDraftRepository;
 import indi.melon.ssc.draft.south.repository.MockTemplateRepository;
+import indi.melon.ssc.draft.south.repository.MockVersionRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.Collections;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
 /**
  * @author vvnn1
@@ -39,19 +42,21 @@ public class DraftAppServiceIT {
     private DraftManager draftManager;
     private DraftRepository draftRepository;
     private ConfigurationRepository configurationRepository;
-    private DraftFileTreeClient draftFileTreeClient;
+    private DraftFileTreeClient draftFileTreeClient = mock(DraftFileTreeClient.class);
     private DraftFactory draftFactory;
     private TemplateRepository templateRepository;
     private ConfigurationFactory configurationFactory;
+    private VersionRepository versionRepository;
 
     @BeforeEach
     public void init() {
+        clearInvocations(draftFileTreeClient);
         draftRepository = new MockDraftRepository();
         configurationRepository = new MockConfigurationRepository();
-        draftFileTreeClient = new MockDraftFileClient();
         draftFactory = new MockDraftFactory("DRAFT_PREFIX_");
         templateRepository = new MockTemplateRepository();
         configurationFactory = new MockConfigurationFactory();
+        versionRepository = new MockVersionRepository();
 
         draftManager = new DraftManager(
                 draftRepository,
@@ -65,7 +70,8 @@ public class DraftAppServiceIT {
                 templateRepository,
                 draftRepository,
                 configurationFactory,
-                configurationRepository
+                configurationRepository,
+                versionRepository
         );
 
         templateRepository.save(new Template(
@@ -91,6 +97,26 @@ public class DraftAppServiceIT {
                                 TemplateType.SQL,
                                 TemplateTag.BASE
                         ),
+                        "vvnn1"
+                )
+        );
+
+        versionRepository.save(
+                new Version(
+                        new VersionID("Version_1"),
+                        new DraftID("draftId_1"),
+                        "IamVersionContent1",
+                        "remark",
+                        "vvnn1"
+                )
+        );
+
+        versionRepository.save(
+                new Version(
+                        new VersionID("Version_2"),
+                        new DraftID("draftId_2"),
+                        "IamVersionCtent1",
+                        "remark",
                         "vvnn1"
                 )
         );
@@ -153,10 +179,10 @@ public class DraftAppServiceIT {
         assertEquals(new EngineID("testEngineId"), configuration.getEngineID());
 
 
-        MockDraftFileClient mockDraftFileClient = (MockDraftFileClient) draftFileTreeClient;
-        assertEquals(draft, mockDraftFileClient.getDraft());
-        assertEquals("directoryId", mockDraftFileClient.getDirectory().id());
-        assertEquals("directoryRoot", mockDraftFileClient.getDirectory().rootId());
+        verify(draftFileTreeClient).create(
+                new Directory("directoryId", "directoryRoot"),
+                draft
+        );
     }
 
 
@@ -227,5 +253,45 @@ public class DraftAppServiceIT {
         assertEquals(new DraftID("draftId_1"), draft.getId());
         assertEquals("newContent", draft.getContent());
         assertEquals("melon", draft.getModifier());
+    }
+
+    @Test
+    public void should_rollback_draft_normally(){
+        assertThrows(ApplicationValidationException.class, () -> draftAppService.rollback(
+                new RollbackDraftCommand(
+                        "draftId_1_not_found",
+                        "Version_2",
+                        "vvnn1"
+                )
+        ));
+
+        assertThrows(ApplicationValidationException.class, () -> draftAppService.rollback(
+                new RollbackDraftCommand(
+                        "draftId_1",
+                        "Version_2_not_found",
+                        "vvnn1"
+                )
+        ));
+
+        assertThrows(ApplicationDomainException.class, () -> draftAppService.rollback(
+                new RollbackDraftCommand(
+                        "draftId_1",
+                        "Version_2",
+                        "vvnn1"
+                )
+        ));
+
+        Draft draft = draftRepository.draftOf(new DraftID("draftId_1"));
+        assertEquals("modify the configuration", draft.getContent());
+
+        draftAppService.rollback(new RollbackDraftCommand(
+                "draftId_1",
+                "Version_1",
+                "vvnn12"
+        ));
+
+        draft = draftRepository.draftOf(new DraftID("draftId_1"));
+        assertEquals("IamVersionContent1", draft.getContent());
+        assertEquals("vvnn12", draft.getModifier());
     }
 }

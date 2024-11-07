@@ -30,8 +30,7 @@ public class DraftManager {
 
         draftRepository.save(draft);
         configurationRepository.save(configuration);
-
-        draftFileTreeClient.createFileNode(
+        draftFileTreeClient.create(
                 directory,
                 draft
         );
