@@ -294,4 +294,23 @@ public class DraftAppServiceIT {
         assertEquals("IamVersionContent1", draft.getContent());
         assertEquals("vvnn12", draft.getModifier());
     }
+
+    @Test
+    public void should_rename_draft_normally() {
+        Draft draft = draftRepository.draftOf(new DraftID("draftId_1"));
+        assertEquals("draftDB", draft.getName());
+        assertEquals("vvnn1", draft.getModifier());
+
+        draftAppService.rename(
+                new RenameDraftCommand(
+                        "draftId_1",
+                        "newDraftDB",
+                        "vvnn2"
+                )
+        );
+
+        draft = draftRepository.draftOf(new DraftID("draftId_1"));
+        assertEquals("newDraftDB", draft.getName());
+        assertEquals("vvnn2", draft.getModifier());
+    }
 }

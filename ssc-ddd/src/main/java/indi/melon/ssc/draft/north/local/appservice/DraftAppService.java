@@ -164,6 +164,22 @@ public class DraftAppService {
         draftRepository.save(draft);
     }
 
+    /**
+     * 重命名草稿
+     * @param command 重命名命令
+     */
+    public void rename(RenameDraftCommand command) {
+        Draft draft = nonNullDraft(command.draftId());
+
+        try {
+            draft.rename(
+                    command.newName(),
+                    command.modifier()
+            );
+        } catch (DomainException e){
+            throw new ApplicationDomainException("rename draft failed. command: " + command, e);
+        }
+    }
 
     /**
      * 非空草稿获取，为空则抛异常
