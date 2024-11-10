@@ -32,6 +32,7 @@ public class TreeNode {
     private Boolean expandable;
     private Boolean locked;
     private Sort sort;
+    private String sourceId;
 
     public TreeNode() {
     }
@@ -45,6 +46,11 @@ public class TreeNode {
         this.updateTime =  LocalDateTime.now();
         this.expandable = expandable;
         this.locked = false;
+    }
+
+    public TreeNode(NodeID id, String name, String type, NodeID parentId,  Boolean expandable, String sourceId) {
+        this(id, name, type, parentId, expandable);
+        this.sourceId = sourceId;
     }
 
     public boolean add(TreeNode childNode) {
