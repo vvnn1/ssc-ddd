@@ -1,6 +1,8 @@
 package indi.melon.ssc.draft.domain.configuration.event;
 
 import indi.melon.ssc.domain.common.cqrs.AbstractDomainEvent;
+import indi.melon.ssc.draft.domain.configuration.ConfigurationID;
+import indi.melon.ssc.draft.domain.configuration.EngineID;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 
@@ -11,10 +13,10 @@ import lombok.Getter;
 @Getter
 @EqualsAndHashCode(callSuper = false)
 public class EngineAllocated extends AbstractDomainEvent {
-    private final String configurationID;
-    private final String engineID;
+    private final ConfigurationID configurationID;
+    private final EngineID engineID;
 
-    public EngineAllocated(String configurationID, String engineID) {
+    public EngineAllocated(ConfigurationID configurationID, EngineID engineID) {
         this.configurationID = configurationID;
         this.engineID = engineID;
     }

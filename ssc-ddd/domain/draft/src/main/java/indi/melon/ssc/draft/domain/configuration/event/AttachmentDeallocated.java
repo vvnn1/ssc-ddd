@@ -14,10 +14,10 @@ import lombok.Getter;
 @Getter
 @EqualsAndHashCode(callSuper = false)
 public class AttachmentDeallocated extends AbstractDomainEvent {
-    private final String configurationId;
-    private final String attachmentId;
+    private final ConfigurationID configurationId;
+    private final AttachmentID attachmentId;
 
-    public AttachmentDeallocated(String configurationId, String attachmentId) {
+    public AttachmentDeallocated(ConfigurationID configurationId, AttachmentID attachmentId) {
         this.configurationId = configurationId;
         this.attachmentId = attachmentId;
     }

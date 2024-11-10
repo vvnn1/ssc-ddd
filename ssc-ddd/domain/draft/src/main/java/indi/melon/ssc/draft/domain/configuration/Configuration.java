@@ -74,31 +74,31 @@ public class Configuration extends AbstractAggregateRoot {
         }
 
         if (assignedEngineID == null){
-            addEvent(new EngineDeallocated(id.value, engineID.value));
+            addEvent(new EngineDeallocated(id, engineID));
             engineID = null;
             return;
         }
 
         if (engineID == null){
-            addEvent(new EngineAllocated(id.value, assignedEngineID.value));
+            addEvent(new EngineAllocated(id, assignedEngineID));
             engineID = assignedEngineID;
             return;
         }
 
         if (!Objects.equals(engineID, assignedEngineID)) {
-            addEvent(new EngineAllocated(id.value, assignedEngineID.value));
-            addEvent(new EngineDeallocated(id.value, engineID.value));
+            addEvent(new EngineAllocated(id, assignedEngineID));
+            addEvent(new EngineDeallocated(id, engineID));
         }
 
         engineID = assignedEngineID;
     }
 
     private AttachmentDeallocated buildAttachmentDeallocated(AttachmentID attachmentID){
-        return new AttachmentDeallocated(id.value, attachmentID.value);
+        return new AttachmentDeallocated(id, attachmentID);
     }
 
     private AttachmentAllocated buildAttachmentAllocated(AttachmentID attachmentID){
-        return new AttachmentAllocated(id.value, attachmentID.value);
+        return new AttachmentAllocated(id, attachmentID);
     }
 
     public Collection<AttachmentID> getAttachmentIDCollection() {

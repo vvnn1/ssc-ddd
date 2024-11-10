@@ -13,10 +13,10 @@ import lombok.Getter;
 @Getter
 @EqualsAndHashCode(callSuper = false)
 public class EngineDeallocated extends AbstractDomainEvent {
-    private final String configurationID;
-    private final String engineID;
+    private final ConfigurationID configurationID;
+    private final EngineID engineID;
 
-    public EngineDeallocated(String configurationID, String engineID) {
+    public EngineDeallocated(ConfigurationID configurationID, EngineID engineID) {
         this.configurationID = configurationID;
         this.engineID = engineID;
     }

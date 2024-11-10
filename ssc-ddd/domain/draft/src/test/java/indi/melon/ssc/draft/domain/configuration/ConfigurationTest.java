@@ -33,8 +33,8 @@ public class ConfigurationTest {
                         new AttachmentID("AttachmentID2")
                 )
         );
-        assertTrue(configuration.domainEvents().contains(new AttachmentAllocated("ConfigurationID1", "AttachmentID1")));
-        assertTrue(configuration.domainEvents().contains(new AttachmentAllocated("ConfigurationID1", "AttachmentID2")));
+        assertTrue(configuration.domainEvents().contains(new AttachmentAllocated(new ConfigurationID("ConfigurationID1"), new AttachmentID("AttachmentID1"))));
+        assertTrue(configuration.domainEvents().contains(new AttachmentAllocated(new ConfigurationID("ConfigurationID1"), new AttachmentID("AttachmentID2"))));
 
         configuration.clearDomainEvents();
         configuration.setAttachmentIDCollection(
@@ -52,8 +52,8 @@ public class ConfigurationTest {
                         new AttachmentID("AttachmentID3")
                 )
         );
-        assertTrue(configuration.domainEvents().contains(new AttachmentDeallocated("ConfigurationID1", "AttachmentID1")));
-        assertTrue(configuration.domainEvents().contains(new AttachmentAllocated("ConfigurationID1", "AttachmentID3")));
+        assertTrue(configuration.domainEvents().contains(new AttachmentDeallocated(new ConfigurationID("ConfigurationID1"), new AttachmentID("AttachmentID1"))));
+        assertTrue(configuration.domainEvents().contains(new AttachmentAllocated(new ConfigurationID("ConfigurationID1"), new AttachmentID("AttachmentID3"))));
 
 
         configuration.clearDomainEvents();
@@ -69,8 +69,8 @@ public class ConfigurationTest {
         configuration.assignAttachments(
                 null
         );
-        assertTrue(configuration.domainEvents().contains(new AttachmentDeallocated("ConfigurationID1", "AttachmentID1")));
-        assertTrue(configuration.domainEvents().contains(new AttachmentDeallocated("ConfigurationID1", "AttachmentID2")));
+        assertTrue(configuration.domainEvents().contains(new AttachmentDeallocated(new ConfigurationID("ConfigurationID1"), new AttachmentID("AttachmentID1"))));
+        assertTrue(configuration.domainEvents().contains(new AttachmentDeallocated(new ConfigurationID("ConfigurationID1"), new AttachmentID("AttachmentID2"))));
     }
 
     @Test
@@ -80,21 +80,21 @@ public class ConfigurationTest {
         );
 
         configuration.assignEngine(new EngineID("EngineID1"));
-        assertTrue(configuration.domainEvents().contains(new EngineAllocated("ConfigurationID1", "EngineID1")));
+        assertTrue(configuration.domainEvents().contains(new EngineAllocated(new ConfigurationID("ConfigurationID1"), new EngineID("EngineID1"))));
 
         configuration.clearDomainEvents();
         configuration.setEngineID(new EngineID("EngineID1"));
 
         configuration.assignEngine(null);
-        assertTrue(configuration.domainEvents().contains(new EngineDeallocated("ConfigurationID1", "EngineID1")));
+        assertTrue(configuration.domainEvents().contains(new EngineDeallocated(new ConfigurationID("ConfigurationID1"), new EngineID("EngineID1"))));
 
 
         configuration.clearDomainEvents();
         configuration.setEngineID(new EngineID("EngineID1"));
 
         configuration.assignEngine(new EngineID("EngineID2"));
-        assertTrue(configuration.domainEvents().contains(new EngineDeallocated("ConfigurationID1", "EngineID1")));
-        assertTrue(configuration.domainEvents().contains(new EngineAllocated("ConfigurationID1", "EngineID2")));
+        assertTrue(configuration.domainEvents().contains(new EngineDeallocated(new ConfigurationID("ConfigurationID1"), new EngineID("EngineID1"))));
+        assertTrue(configuration.domainEvents().contains(new EngineAllocated(new ConfigurationID("ConfigurationID1"), new EngineID("EngineID2"))));
     }
 
     @Test
