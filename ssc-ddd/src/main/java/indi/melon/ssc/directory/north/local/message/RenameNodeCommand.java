@@ -8,10 +8,10 @@ import jakarta.annotation.Nonnull;
  * @author wangmenglong
  * @since 2024/10/18 16:25
  */
-public record RenameNodeCommand(@Nonnull String rootNodeId,
-                                @Nonnull TreeNode treeNode) {
-
-    public record TreeNode(@Nonnull String id, @Nonnull String newName) {
-
+public record RenameNodeCommand(@Nonnull String id, @Nonnull String newName) {
+    public RenameNodeCommand {
+        if (StringUtils.isBlank(newName)) {
+            throw new ApplicationValidationException("newName should not be blank.");
+        }
     }
 }

@@ -5,6 +5,9 @@ import indi.melon.ssc.ticket.domain.south.repository.TicketBoxRepository;
 import indi.melon.ssc.ticket.domain.ticket.BoxID;
 import indi.melon.ssc.ticket.domain.ticket.TicketBox;
 import indi.melon.ssc.ticket.south.repository.dao.TicketBoxDao;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.GeneratedValue;
+import org.hibernate.annotations.GenericGenerator;
 import org.springframework.stereotype.Repository;
 
 /**
@@ -14,6 +17,7 @@ import org.springframework.stereotype.Repository;
 @Repository
 public class TicketBoxRepositoryImpl implements TicketBoxRepository {
     private final TicketBoxDao ticketBoxDao;
+    EntityManager entityManager;
 
     public TicketBoxRepositoryImpl(TicketBoxDao ticketBoxDao) {
         this.ticketBoxDao = ticketBoxDao;

@@ -8,32 +8,50 @@ import java.util.Arrays;
  * @since 2024/10/12 22:36
  */
 public class TreeNodeUtil {
-    public static TreeNode buildNode(NodeID id, NodeID parentId){
+    public static TreeNode buildNode(NodeID id){
         return new TreeNode(
                 id,
                 "treeNode-" + id,
                 "directory",
-                parentId,
+                true,
+                false
+        );
+    }
+
+    public static TreeNode buildRootNode(NodeID id){
+        return new TreeNode(
+                id,
+                "treeNode-" + id,
+                "directory",
+                true,
                 true
         );
     }
 
-    public static TreeNode buildUnExpandableNode(NodeID id, NodeID parentId){
-        TreeNode treeNode = buildNode(id, parentId);
+    public static TreeNode buildUnExpandableNode(NodeID id){
+        TreeNode treeNode = buildNode(id);
         treeNode.setExpandable(false);
         return treeNode;
     }
 
     public static TreeNode buildTree() {
-        TreeNode rootNode = buildNode(new NodeID("0"), null);
-        Arrays.asList(
-                buildNode(new NodeID("1"), new NodeID("0")),
-                buildNode(new NodeID("2"), new NodeID("0")),
-                buildNode(new NodeID("3"), new NodeID("0")),
-                buildNode(new NodeID("4"), new NodeID("3")),
-                buildNode(new NodeID("5"), new NodeID("3")),
-                buildUnExpandableNode(new NodeID("6"), new NodeID("5"))
-        ).forEach(rootNode::add);
+        TreeNode rootNode = buildRootNode(new NodeID("0"));
+
+        TreeNode node1 = buildNode(new NodeID("1"));
+        TreeNode node2 = buildNode(new NodeID("1"));
+        TreeNode node3 = buildNode(new NodeID("1"));
+        TreeNode node4 = buildNode(new NodeID("1"));
+        TreeNode node5 = buildNode(new NodeID("1"));
+        TreeNode node6 = buildUnExpandableNode(new NodeID("6"));
+
+        rootNode.add(node1);
+        rootNode.add(node2);
+        rootNode.add(node3);
+
+        node3.add(node4);
+        node3.add(node5);
+
+        node5.add(node6);
         return rootNode;
     }
 }

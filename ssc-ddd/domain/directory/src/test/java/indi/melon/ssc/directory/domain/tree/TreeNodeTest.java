@@ -1,10 +1,19 @@
 package indi.melon.ssc.directory.domain.tree;
 
-import indi.melon.ssc.directory.domain.tree.exception.*;
+import indi.melon.ssc.directory.domain.tree.exception.AlreadyExistException;
+import indi.melon.ssc.directory.domain.tree.exception.IllegalNodeException;
+import indi.melon.ssc.directory.domain.tree.exception.NotFoundException;
+import indi.melon.ssc.directory.domain.tree.exception.NotSupportException;
 import org.junit.jupiter.api.Test;
-import java.time.LocalDateTime;
-import java.util.*;
 
+import java.time.LocalDateTime;
+import java.util.Random;
+
+import static indi.melon.ssc.directory.domain.tree.Sort.Order.asc;
+import static indi.melon.ssc.directory.domain.tree.Sort.Order.desc;
+import static indi.melon.ssc.directory.domain.tree.Sort.TreeNodeField.createTime;
+import static indi.melon.ssc.directory.domain.tree.Sort.TreeNodeField.name;
+import static indi.melon.ssc.directory.domain.tree.Sort.orderBy;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
@@ -12,355 +21,266 @@ import static org.junit.jupiter.api.Assertions.*;
  * @since 2024/9/22 22:18
  */
 class TreeNodeTest {
-
     @Test
-    public void should_has_right_parent_node_if_be_added(){
-        TreeNode rootNode = buildNode(new NodeID("0"), null);
-        TreeNode childNode1 = buildNode(new NodeID("1"), new NodeID("0"));
+    public void should_add_child_node_normally() {
+        TreeNode rootNode = buildDirectoryNode(new NodeID("1"), true);
+        TreeNode node2 = buildDirectoryNode(new NodeID("2"));
 
-        assertTrue(rootNode.add(childNode1));
-        assertEquals(1, rootNode.getChildNodeList().size());
-        assertEquals(childNode1.getId(), rootNode.getChildNodeList().get(0).getId());
+        rootNode.add(node2);
+        assertTrue(rootNode.getChildNodeList().contains(node2));
+        assertSame(node2.getParentNode(), rootNode);
 
-        TreeNode childNode2 = buildNode(new NodeID("2"), new NodeID("1"));
-        assertTrue(rootNode.add(childNode2));
-        assertEquals(1, childNode1.getChildNodeList().size());
-        assertEquals(childNode2.getId(), childNode1.getChildNodeList().get(0).getId());
+        assertDoesNotThrow(() -> rootNode.add(node2));
 
-        TreeNode childNode3 = buildNode(new NodeID("3"), new NodeID("4"));
-        assertFalse(rootNode.add(childNode3));
-        assertEquals(1, rootNode.getChildNodeList().size());
-        assertEquals(1, childNode1.getChildNodeList().size());
-        assertEquals(0, childNode2.getChildNodeList() == null ? 0:childNode2.getChildNodeList().size());
+        TreeNode node2Copy = buildDirectoryNode(new NodeID("2"));
+        assertThrows(AlreadyExistException.class, () -> rootNode.add(node2Copy));
 
-        TreeNode childNode4 = buildNode(new NodeID("4"), null);
-        assertThrows(IllegalNodeException.class, () -> rootNode.add(childNode4));
-    }
-    
-    @Test
-    public void should_throw_exception_if_add_same_node_to_same_parent() {
-        TreeNode rootNode = buildTree(); // 0-11
+        TreeNode node4 = buildDirectoryNode(new NodeID("4"));
+        node2.add(node4);
+        TreeNode node5 = buildDirectoryNode(new NodeID("5"));
+        node4.add(node5);
 
-        TreeNode childNode12 = buildNode(new NodeID("12"), new NodeID("3"));
-        assertTrue(rootNode.add(childNode12));
+        TreeNode node6 = buildFileNode(new NodeID("6"));
+        node5.add(node6);
 
-        TreeNode childNode13 = buildNode(new NodeID("13"), new NodeID("0"));
-        assertTrue(rootNode.add(childNode13));
+        assertThrows(NotSupportException.class, () -> node2.add(node6));
 
-        TreeNode childNode14 = buildNameNode(new NodeID("14"), new NodeID("5"), "Node-14");
-        assertTrue(rootNode.add(childNode14));
+        TreeNode node3 = buildDirectoryNode(new NodeID("3"), true);
+        assertThrows(IllegalNodeException.class, () -> rootNode.add(node3));
 
-        TreeNode childNode14Copy = buildNameNode(new NodeID("14-1"), new NodeID("5"), "Node-14");
-        assertThrows(AlreadyExistException.class, () -> rootNode.add(childNode14Copy));
-
-        TreeNode childNode14File = buildNameNode(new NodeID("14-2"), new NodeID("5"), "Node-14");
-        childNode14File.setType("file");
-        assertTrue(rootNode.add(childNode14File));
+        TreeNode node7 = buildFileNode(new NodeID("7"));
+        node4.locked();
+        assertThrows(NotSupportException.class, () -> node5.add(node7));
+        node4.unlocked();
     }
 
     @Test
     public void should_all_be_sorted_with_order() {
-        TreeNode treeNode10 = buildNode(new NodeID("10"), new NodeID("11"));
-        assertThrows(IllegalNodeException.class, () -> treeNode10.sortBy(Sort.orderBy(Sort.TreeNodeField.createTime, Sort.Order.asc)));
+        TreeNode rootNode = buildDirectoryNode(new NodeID("0"), true);
+        rootNode.sortBy(orderBy(createTime, asc));
 
-        TreeNode rootNode = buildNode(new NodeID("0"), null);
+        assertNull(rootNode.getChildNodeList());
 
         for (int i = 1; i < 7; i++) {
-            TreeNode treeNode = buildTimeNode(new NodeID(String.valueOf(i)), new NodeID("0"), LocalDateTime.of(2024, new Random().nextInt(11) + 1, new Random().nextInt(29) + 1, new Random().nextInt(23), new Random().nextInt(59)));
+            TreeNode treeNode = buildTimeNode(new NodeID(String.valueOf(i)), LocalDateTime.of(2024, new Random().nextInt(11) + 1, new Random().nextInt(29) + 1, new Random().nextInt(23), new Random().nextInt(59)), false);
             rootNode.add(treeNode);
         }
+        assertTrue(isCreateTimeAsc(rootNode));
 
-        TreeNode treeNode8 = buildTimeNode(new NodeID("8"), new NodeID("0"), LocalDateTime.of(2024, new Random().nextInt(11) + 1, new Random().nextInt(29) + 1, new Random().nextInt(23), new Random().nextInt(59)));
+
+        TreeNode treeNode8 = buildTimeNode(new NodeID("8"), LocalDateTime.of(2024, new Random().nextInt(11) + 1, new Random().nextInt(29) + 1, new Random().nextInt(23), new Random().nextInt(59)), false);
         rootNode.add(treeNode8);
+        treeNode8.sortBy(orderBy(name, desc).and(createTime, asc));
 
-        for (int i = 0; i < 5; i++) {
-            TreeNode treeNode = buildTimeNode(new NodeID(String.valueOf(i+10)), new NodeID("8"), LocalDateTime.of(2024, new Random().nextInt(11) + 1, new Random().nextInt(29) + 1, new Random().nextInt(23), new Random().nextInt(59)));
-            rootNode.add(treeNode);
+        for (int i = 0; i < 10; i++) {
+            TreeNode treeNode = buildTimeNode(new NodeID(String.valueOf(i+10)), LocalDateTime.of(2024, new Random().nextInt(11) + 1, new Random().nextInt(29) + 1, new Random().nextInt(23), new Random().nextInt(59)), (i&1) == 1);
+            treeNode.setName("treeNode" + i/2);
+            treeNode8.add(treeNode);
         }
 
-        assertFalse(isCreateTimeAsc(rootNode));
+        assertTrue(isNameDescAndCreateTimeAsc(treeNode8));
 
-        rootNode.sortBy(Sort.orderBy(Sort.TreeNodeField.createTime, Sort.Order.asc));
-        assertTrue(isCreateTimeAsc(rootNode));
-
-
-        TreeNode treeNode = buildTimeNode(new NodeID("7"), new NodeID("0"), LocalDateTime.of(2023, 1, 1, 1, 1));
-        rootNode.add(treeNode);
-
-        assertTrue(isCreateTimeAsc(rootNode));
+        TreeNode node10 = buildFileNode(new NodeID("10"));
+        assertThrows(NotSupportException.class, () -> node10.sortBy(orderBy(name, desc).and(createTime, asc)));
     }
 
     @Test
-    public void should_add_node_if_its_root_node() {
-        TreeNode rootNode = buildNode(new NodeID("0"), null);
-        TreeNode childNode1 = buildNode(new NodeID("1"), new NodeID("0"));
+    public void should_be_parent_if_it_is_expandable(){
+        TreeNode treeNode = buildDirectoryNode(new NodeID("1"), true);
+        assertTrue(treeNode.getExpandable());
+        assertTrue(treeNode.add(buildFileNode(new NodeID("2"))));
 
-        assertTrue(rootNode.add(childNode1));
-
-        TreeNode childNode2 = buildNode(new NodeID("2"), new NodeID("1"));
-        assertThrows(IllegalNodeException.class, () -> childNode1.add(childNode2));
-    }
-
-    @Test
-    public void should_get_node_if_its_root_node() {
-        TreeNode rootNode = buildTree();
-        assertNull(rootNode.get(new NodeID("12")));
-        TreeNode treeNode7 = rootNode.get(new NodeID("7"));
-        assertEquals(new NodeID("7"), treeNode7.getId());
-
-        assertThrows(IllegalNodeException.class, () -> treeNode7.get(new NodeID("12")));
-    }
-
-    @Test
-    public void should_be_parent_node_if_it_is_expandable(){
-        TreeNode rootNode = buildNode(new NodeID("0"), null);
-        TreeNode childNode1 = buildNode(new NodeID("1"), new NodeID("0"));
-        assertTrue(rootNode.add(childNode1));
-
-        TreeNode childNode2 = buildUnExpandableNode(new NodeID("2"), new NodeID("0"));
-        assertTrue(rootNode.add(childNode2));
-
-        TreeNode childNode3 = buildNode(new NodeID("3"), new NodeID("1"));
-        assertTrue(rootNode.add(childNode3));
-
-        TreeNode childNode4 = buildNode(new NodeID("4"), new NodeID("2"));
-        assertThrows(NotSupportException.class, () -> rootNode.add(childNode4));
-
-        assertThrows(NotSupportException.class, () -> rootNode.move(new NodeID("1"), new NodeID("2")));
-    }
-
-    @Test
-    public void should_exist_child_node_after_add(){
-        TreeNode rootNode = buildNode(new NodeID("0"), null);
-        TreeNode childNode1 = buildNode(new NodeID("1"), new NodeID("0"));
-        rootNode.add(childNode1);
-        rootNode.add(buildNode(new NodeID("3"), new NodeID("1")));
-        rootNode.add(buildNode(new NodeID("4"), new NodeID("1")));
-
-        assertTrue(rootNode.exist(buildNode(new NodeID("1"), new NodeID("0"))));
-        assertTrue(rootNode.exist(buildNode(new NodeID("3"), new NodeID("1"))));
-        assertFalse(rootNode.exist(buildNode(new NodeID("5"), new NodeID("1"))));
+        treeNode.setExpandable(false);
+        assertThrows(NotSupportException.class, () -> treeNode.add(buildFileNode(new NodeID("3"))));
     }
 
     @Test
     public void should_remove_child_node_if_exist(){
-        TreeNode rootNode = buildTree();
+        TreeNode rootNode = buildDirectoryNode(new NodeID("1"), true);
+        TreeNode node2 = buildDirectoryNode(new NodeID("2"));
+        assertFalse(rootNode.remove(node2));
 
-        assertThrows(NotSupportException.class, () -> rootNode.remove(new NodeID("0")));
-        assertFalse(rootNode.remove(new NodeID("12")));
+        rootNode.locked();
+        assertThrows(NotSupportException.class, () -> rootNode.remove(node2));
+        rootNode.unlocked();
 
-        assertTrue(rootNode.exist(buildNode(new NodeID("6"), new NodeID("5"))));
-        assertTrue(rootNode.remove(new NodeID("6")));
-        assertFalse(rootNode.exist(buildNode(new NodeID("6"), new NodeID("5"))));
-        assertFalse(rootNode.remove(new NodeID("6")));
+        assertTrue(rootNode.add(node2));
+        assertTrue(rootNode.remove(node2));
+        assertFalse(rootNode.getChildNodeList().contains(node2));
+    }
 
+    @Test
+    public void should_lock_and_unlock_normally() {
+        TreeNode treeNode = buildDirectoryNode(new NodeID("0"), true);
+        assertFalse(treeNode.isLocked());
 
-        TreeNode rootNode2 = buildNode(new NodeID("999"), null);
-        assertFalse(rootNode.remove(rootNode2.getId()));
+        treeNode.locked();
+        assertTrue(treeNode.isLocked());
 
-        TreeNode treeNode1 = buildNode(new NodeID("1"), new NodeID("2"));
-        TreeNode treeNode2 = buildNode(new NodeID("2"), new NodeID("0"));
-        assertThrows(IllegalNodeException.class, () -> treeNode2.remove(treeNode1.getId()));
+        treeNode.unlocked();
+        assertFalse(treeNode.isLocked());
+    }
+
+    @Test
+    public void should_rename_normally() {
+        TreeNode rootNode = buildDirectoryNode(new NodeID("1"), true);
+        TreeNode node2 = buildDirectoryNode(new NodeID("2"));
+        rootNode.add(node2);
+
+        rootNode.rename(new NodeID("2"), "testName");
+        assertEquals("testName", rootNode.get(new NodeID("2")).getName());
+
+        assertThrows(NotFoundException.class, () -> rootNode.rename(new NodeID("3"), "testName"));
+
+        TreeNode node3 = buildDirectoryNode(new NodeID("3"));
+        rootNode.add(node3);
+        node3.locked();
+        assertThrows(NotSupportException.class, () -> rootNode.rename(new NodeID("3"), "testName3"));
+
+        TreeNode node4 = buildDirectoryNode(new NodeID("4"));
+        rootNode.add(node4);
+        String name4 = node4.getName();
+        assertThrows(AlreadyExistException.class, () -> rootNode.rename(new NodeID("4"), "testName"));
+        assertEquals(name4, rootNode.get(new NodeID("4")).getName());
+
+        TreeNode node5 = buildFileNode(new NodeID("5"));
+        rootNode.add(node5);
+        assertDoesNotThrow(() -> rootNode.rename(new NodeID("5"), "testName"));
+        assertEquals("testName", rootNode.get(new NodeID("5")).getName());
+
     }
 
 
     @Test
-    public void should_rename_right_child_node() {
-        TreeNode treeNode13 = buildNode(new NodeID("13"), new NodeID("2"));
-        assertThrows(IllegalNodeException.class, () -> treeNode13.rename(new NodeID("2"), "2"));
+    public void should_move_to_right_parent(){
+        TreeNode rootNode = buildDirectoryNode(new NodeID("0"), true);
+        TreeNode node2 = buildDirectoryNode(new NodeID("2"));
 
-        TreeNode rootNode = buildTree();
-        TreeNode treeNode12 = buildNode(new NodeID("12"), new NodeID("3"));
+        assertThrows(NotSupportException.class, () -> rootNode.moveTo(node2));
 
-        assertFalse(rootNode.exist(treeNode12));
-        rootNode.add(treeNode12);
-        assertTrue(rootNode.exist(treeNode12));
+        assertThrows(NotSupportException.class, () -> node2.moveTo(rootNode));
 
-        rootNode.rename(new NodeID("12"), "1222");
-        assertTrue(rootNode.exist(treeNode12)); // id相同
-        assertTrue(rootNode.exist(buildNameNode(new NodeID("122"), new NodeID("3"), "1222"))); // 名称、类型、父文件相同
+        rootNode.locked();
+        assertThrows(NotSupportException.class, () -> node2.moveTo(rootNode));
+        rootNode.unlocked();
 
-        assertThrows(NotFoundException.class, () -> rootNode.rename(new NodeID("13"), "should_throws"));
+        TreeNode node3 = buildFileNode(new NodeID("3"));
+        rootNode.add(node3);
 
-        TreeNode rootNode2 = buildNode(new NodeID("0"), null);
-        assertThrows(NotSupportException.class, () -> rootNode2.rename(new NodeID("0"), "CantRename"));
+        assertThrows(NotSupportException.class, () -> node2.moveTo(node3));
+
+        assertTrue(rootNode.add(node2));
+        assertTrue(node3.moveTo(node2));
+        assertSame(node3.getParentNode(), node2);
+        assertTrue(node2.getChildNodeList().contains(node3));
     }
 
     @Test
-    public void should_lock_and_unlock_right(){
-        TreeNode rootNode = buildNode(new NodeID("0"), null);
+    public void should_get_child_normally() {
+        TreeNode rootNode = buildDirectoryNode(new NodeID("0"), true);
+        TreeNode node1 = buildDirectoryNode(new NodeID("1"));
+        TreeNode node2 = buildFileNode(new NodeID("2"));
+        rootNode.add(node1);
+        rootNode.add(node2);
 
-        TreeNode treeNode1 = buildNode(new NodeID("1"), new NodeID("0"));
-        TreeNode treeNode2 = buildNode(new NodeID("2"), new NodeID("0"));
-        TreeNode treeNode3 = buildNode(new NodeID("3"), new NodeID("0"));
-        TreeNode treeNode4 = buildNode(new NodeID("4"), new NodeID("0"));
+        assertNull(rootNode.get(new NodeID("3")));
+        assertSame(node2, rootNode.get(new NodeID("2")));
 
-        Arrays.asList(treeNode1, treeNode2, treeNode3, treeNode4).forEach(rootNode::add);
+        TreeNode node3 = buildFileNode(new NodeID("3"));
+        node1.add(node3);
 
-
-        TreeNode treeNode5 = buildNode(new NodeID("5"), new NodeID("2"));
-        TreeNode treeNode6 = buildNode(new NodeID("6"), new NodeID("2"));
-        Arrays.asList(treeNode5, treeNode6).forEach(rootNode::add);
-
-        TreeNode treeNode7 = buildNode(new NodeID("7"), new NodeID("5"));
-        rootNode.add(treeNode7);
-
-        List<TreeNode> childNodes = Arrays.asList(treeNode1, treeNode2, treeNode3, treeNode4, treeNode5, treeNode6);
-
-        assertFalse(rootNode.isLocked(new NodeID("7")));
-        assertFalse(treeNode7.getLocked());
-        assertTrue(childNodes.stream().map(TreeNode::getLocked).allMatch(Boolean.FALSE::equals));
-
-        rootNode.locked(new NodeID("7"));
-        assertTrue(rootNode.isLocked(new NodeID("7")));
-        assertTrue(treeNode7.getLocked());
-        assertTrue(childNodes.stream().map(TreeNode::getLocked).allMatch(Boolean.FALSE::equals));
-
-        assertThrows(NotFoundException.class, () -> rootNode.locked(new NodeID("8")));
-        assertThrows(NotFoundException.class, () -> rootNode.isLocked(new NodeID("8")));
-
-        rootNode.unlocked(new NodeID("7"));
-        assertFalse(rootNode.isLocked(new NodeID("7")));
-        assertFalse(treeNode7.getLocked());
-        assertTrue(childNodes.stream().map(TreeNode::getLocked).allMatch(Boolean.FALSE::equals));
-
-        assertThrows(NotFoundException.class, () -> rootNode.unlocked(new NodeID("8")));
+        assertSame(node3, rootNode.get(new NodeID("3")));
     }
 
     @Test
-    public void should_move_node_to_right_parent(){
-        TreeNode treeNode = buildNode(new NodeID("10"), new NodeID("13"));
-        assertThrows(IllegalNodeException.class, () -> treeNode.move(new NodeID("13"), new NodeID("10")));
+    public void should_conflict_normally() {
+        TreeNode rootNode = buildDirectoryNode(new NodeID("0"), true);
 
-        TreeNode rootNode = buildNode(new NodeID("0"), null);
+        TreeNode node2 = buildDirectoryNode(new NodeID("2"));
+        assertFalse(rootNode.checkNodeConflict(node2));
+        rootNode.add(node2);
 
-        TreeNode treeNode1 = buildNode(new NodeID("1"), new NodeID("0"));
-        TreeNode treeNode2 = buildNode(new NodeID("2"), new NodeID("0"));
-        Arrays.asList(treeNode1, treeNode2).forEach(rootNode::add);
+        TreeNode node3 = buildDirectoryNode(new NodeID("3"));
+        assertFalse(rootNode.checkNodeConflict(node3));
+        rootNode.add(node3);
+        assertFalse(rootNode.checkNodeConflict(node3));
 
-        rootNode.move(new NodeID("1"), new NodeID("2"));
-        assertFalse(rootNode.getChildNodeList().contains(treeNode1));
-        assertTrue(treeNode2.getChildNodeList().contains(treeNode1));
-        assertEquals(new NodeID("2"), treeNode1.getParentId());
+        TreeNode node4 = buildFileNode(new NodeID("4"));
+        node4.setName(node3.getName());
+        assertFalse(rootNode.checkNodeConflict(node4));
+        rootNode.add(node4);
 
-        assertThrows(NotFoundException.class, () -> rootNode.move(new NodeID("3"), new NodeID("2")));
-        assertThrows(NotFoundException.class, () -> rootNode.move(new NodeID("2"), new NodeID("3")));
+        TreeNode node5 = buildDirectoryNode(new NodeID("5"));
+        node5.setName(node3.getName());
+        assertTrue(rootNode.checkNodeConflict(node5));
     }
 
-    @Test
-    public void should_not_rename_and_remove_and_move_if_locked(){
-        TreeNode tempNode = new TreeNode();
-        TreeNode rootNode = buildTree();
-
-        TreeNode treeNode13 = buildNode(new NodeID("13"), new NodeID("5"));
-        rootNode.add(treeNode13);
-        rootNode.rename(new NodeID("13"), "test_rename");
-        assertEquals("test_rename", treeNode13.getName());
-        rootNode.locked(new NodeID("13"));
-        assertThrows(NotSupportException.class, () -> rootNode.rename(new NodeID("13"), "test_rename_locked"));
-        assertEquals("test_rename", treeNode13.getName());
-
-        assertTrue(rootNode.remove(new NodeID("11")));
-
-        tempNode.setId(new NodeID("11"));
-        assertFalse(rootNode.exist(tempNode));
-
-        rootNode.locked(new NodeID("10"));
-        assertThrows(NotSupportException.class, () -> rootNode.remove(new NodeID("10")));
-        tempNode.setId(new NodeID("10"));
-        assertTrue(rootNode.exist(tempNode));
-
-        TreeNode treeNode14 = buildNode(new NodeID("14"), new NodeID("0"));
-        rootNode.add(treeNode14);
-
-        assertThrows(NotSupportException.class, () -> rootNode.move(new NodeID("14"), new NodeID("10")));
-    }
-
-    private boolean isCreateTimeAsc(TreeNode rootNode) {
-        LinkedList<TreeNode> queue = new LinkedList<>(Collections.singleton(rootNode));
-        while (!queue.isEmpty()) {
-            TreeNode treeNode = queue.remove();
-            if (!isCreateTimeAsc(treeNode.getChildNodeList())){
-                return false;
-            }
-            if (treeNode.getChildNodeList() != null){
-                queue.addAll(treeNode.getChildNodeList());
-            }
-        }
-        return true;
-    }
-
-    private boolean isCreateTimeAsc(List<TreeNode> treeNodeList) {
-        if (treeNodeList == null){
+    private boolean isCreateTimeAsc(TreeNode node) {
+        if (node.getChildNodeList() == null) {
             return true;
         }
 
-        TreeNode pre = null;
-        for (TreeNode treeNode : treeNodeList) {
-            if (pre != null && pre.getCreateTime().isAfter(treeNode.getCreateTime())){
-                return false;
+        TreeNode preNode = null;
+
+        for (TreeNode treeNode : node.getChildNodeList()) {
+            if (preNode != null) {
+                if (preNode.getCreateTime().isAfter(treeNode.getCreateTime())) {
+                    return false;
+                }
             }
-            pre = treeNode;
+            preNode = treeNode;
         }
 
         return true;
     }
 
-    private TreeNode buildUnExpandableNode(NodeID id, NodeID parentId){
-        TreeNode treeNode = buildNode(id, parentId);
-        treeNode.setExpandable(Boolean.FALSE);
-        return treeNode;
-    }
-
-    private TreeNode buildTimeNode(NodeID id, NodeID parentId, LocalDateTime localDateTime) {
-        TreeNode treeNode = buildNode(id, parentId);
+    private TreeNode buildTimeNode(NodeID id, LocalDateTime localDateTime, boolean isFileNode) {
+        TreeNode treeNode =isFileNode ? buildFileNode(id) : buildDirectoryNode(id);
         treeNode.setCreateTime(localDateTime);
         return treeNode;
     }
 
-    private TreeNode buildNode(NodeID id, NodeID parentId) {
+
+    private boolean isNameDescAndCreateTimeAsc(TreeNode node) {
+        TreeNode preNode = null;
+        for (TreeNode treeNode : node.getChildNodeList()) {
+            if (preNode != null) {
+                if (preNode.getName().compareTo(treeNode.getName()) < 0) {
+                    return false;
+                }
+
+                if (preNode.getName().compareTo(treeNode.getName()) == 0) {
+                    if (preNode.getCreateTime().isAfter(treeNode.getCreateTime())) {
+                        return false;
+                    }
+                }
+            }
+            preNode = treeNode;
+        }
+        return true;
+    }
+
+    private TreeNode buildDirectoryNode(NodeID id, boolean isRoot) {
         return new TreeNode(
                 id,
                 "treeNode" + id,
                 "directory",
-                parentId,
-                true
+                true,
+                isRoot
         );
     }
 
-    private TreeNode buildNameNode(NodeID id, NodeID parentId, String name) {
-        TreeNode treeNode = buildNode(id, parentId);
-        treeNode.setName(name);
-        return treeNode;
+    private TreeNode buildDirectoryNode(NodeID id) {
+        return buildDirectoryNode(id, false);
     }
 
-    /**                     0
-     *                 /         \
-     *               /            \
-     *            1  2  3     4        5
-     *                 /    /  \     /   \
-     *               11   9   10    6  7  8
-     */
-    private TreeNode buildTree(){
-        TreeNode rootNode = buildNode(new NodeID("0"), null);
-
-        TreeNode childNode1 = buildNode(new NodeID("1"), new NodeID("0"));
-        TreeNode childNode2 = buildNode(new NodeID("2"), new NodeID("0"));
-        TreeNode childNode3 = buildNode(new NodeID("3"), new NodeID("0"));
-        TreeNode childNode4 = buildNode(new NodeID("4"), new NodeID("0"));
-        TreeNode childNode5 = buildNode(new NodeID("5"), new NodeID("0"));
-
-        Arrays.asList(childNode1,childNode2,childNode3,childNode4,childNode5).forEach(rootNode::add);
-
-        TreeNode childNode6 = buildNode(new NodeID("6"), new NodeID("5"));
-        TreeNode childNode7 = buildNode(new NodeID("7"), new NodeID("5"));
-        TreeNode childNode8 = buildNode(new NodeID("8"), new NodeID("5"));
-        TreeNode childNode9 = buildNode(new NodeID("9"), new NodeID("4"));
-        TreeNode childNode10 = buildNode(new NodeID("10"), new NodeID("4"));
-        TreeNode childNode11 = buildNode(new NodeID("11"), new NodeID("3"));
-        Arrays.asList(childNode6, childNode7, childNode8).forEach(rootNode::add);
-        Arrays.asList(childNode9, childNode10).forEach(rootNode::add);
-        List.of(childNode11).forEach(rootNode::add);
-        return rootNode;
+    private TreeNode buildFileNode(NodeID id) {
+        return new TreeNode(
+                id,
+                "treeNode" + id,
+                "file",
+                false,
+                false
+        );
     }
 }

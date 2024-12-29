@@ -9,6 +9,6 @@ import indi.melon.ssc.directory.domain.tree.TreeNode;
  */
 public interface TreeNodeRepository {
     TreeNode treeNodeOf(NodeID id);
-    void save(TreeNode treeNode);
+    TreeNode save(TreeNode treeNode);
     void delete(NodeID id);
 }

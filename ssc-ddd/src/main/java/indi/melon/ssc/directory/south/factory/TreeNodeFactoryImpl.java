@@ -1,6 +1,5 @@
 package indi.melon.ssc.directory.south.factory;
 
-import indi.melon.ssc.directory.common.BizTagProperties;
 import indi.melon.ssc.directory.domain.south.factory.TreeNodeFactory;
 import indi.melon.ssc.directory.domain.tree.NodeID;
 import indi.melon.ssc.directory.domain.tree.TreeNode;
@@ -8,7 +7,6 @@ import indi.melon.ssc.ticket.north.local.appservice.TicketAppService;
 import indi.melon.ssc.ticket.north.local.message.TicketCreateCommand;
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
 
 import static indi.melon.ssc.directory.common.BizTagProperties.TREE_NODE_BIZ_TAG;
 
@@ -25,7 +23,7 @@ public class TreeNodeFactoryImpl implements TreeNodeFactory {
     }
 
     @Override
-    public TreeNode create(String name, String type, Boolean expandable, String parentNodeId) {
+    public TreeNode create(String name, String type, boolean expandable, boolean isRoot) {
         String id = ticketAppService.require(
                 new TicketCreateCommand<>(TREE_NODE_BIZ_TAG, String.class)
         );
@@ -34,8 +32,8 @@ public class TreeNodeFactoryImpl implements TreeNodeFactory {
                 new NodeID(id),
                 name,
                 type,
-                parentNodeId == null ? null : new NodeID(parentNodeId),
-                expandable
+                expandable,
+                isRoot
         );
     }
 }

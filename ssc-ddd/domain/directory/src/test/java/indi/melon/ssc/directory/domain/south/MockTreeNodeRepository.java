@@ -11,7 +11,7 @@ import java.util.*;
  * @since 2024/10/26 14:40
  */
 public class MockTreeNodeRepository implements TreeNodeRepository {
-    private Map<NodeID, TreeNode> db = new HashMap<>();
+    private final Map<NodeID, TreeNode> db = new HashMap<>();
 
     @Override
     public TreeNode treeNodeOf(NodeID id) {
@@ -19,22 +19,24 @@ public class MockTreeNodeRepository implements TreeNodeRepository {
     }
 
     @Override
-    public void save(TreeNode treeNode) {
-        LinkedList<TreeNode> queue = new LinkedList<>(Collections.singletonList(treeNode));
+    public TreeNode save(TreeNode treeNode) {
+        TreeNode rootNode = treeNode;
+        while(!rootNode.isRoot()) {
+            rootNode = rootNode.getParentNode();
+        };
+
+        db.clear();
+
+        LinkedList<TreeNode> queue = new LinkedList<>(Collections.singletonList(rootNode));
         while (!queue.isEmpty()) {
             TreeNode node = queue.poll();
             db.put(node.getId(), node);
-
-            new ArrayList<>(db.values())
-                    .stream()
-                    .filter(n -> node.getId().equals(n.getParentId()))
-                    .forEach(n -> db.remove(n.getId()));
-
 
             if (node.getChildNodeList() != null && !node.getChildNodeList().isEmpty()) {
                 queue.addAll(node.getChildNodeList());
             }
         }
+        return treeNode;
     }
 
     @Override

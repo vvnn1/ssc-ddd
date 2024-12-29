@@ -7,5 +7,5 @@ import indi.melon.ssc.directory.domain.tree.TreeNode;
  * @since 2024/10/5 22:20
  */
 public interface TreeNodeFactory {
-    TreeNode create(String name, String type, Boolean expandable, String parentNodeId);
+    TreeNode create(String name, String type, boolean expandable, boolean isRoot);
 }

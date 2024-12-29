@@ -31,9 +31,9 @@ public class TreeNodeRepositoryImpl implements TreeNodeRepository {
     }
 
     @Override
-    public void save(TreeNode treeNode) {
+    public TreeNode save(TreeNode treeNode) {
         try {
-            treeNodeDao.save(treeNode);
+            return treeNodeDao.save(treeNode);
         } catch (Exception e) {
             throw new ApplicationInfrastructureException("save tree node fail. node: " + treeNode, e);
         }

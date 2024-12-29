@@ -2,34 +2,30 @@ package indi.melon.ssc.directory.north.local.message;
 
 
 import indi.melon.ssc.common.exception.ApplicationValidationException;
+import indi.melon.ssc.domain.common.utils.StringUtils;
 import jakarta.annotation.Nonnull;
 
 /**
  * @author vvnn1
  * @since 2024/10/5 12:51
  */
-public record CreateNodeCommand(String rootNodeId,
-                                @Nonnull TreeNode treeNode) {
-
+public record CreateNodeCommand(@Nonnull String name,
+                                String type,
+                                boolean expandable,
+                                boolean isRoot,
+                                String parentId) {
     public CreateNodeCommand {
-        if (rootNodeId == null && treeNode.parentNodeId != null){
-            throw new ApplicationValidationException("please assign rootNodeId");
+        if (isRoot && !StringUtils.isBlank(parentId)){
+            throw new ApplicationValidationException("can create a root node with parent node.");
         }
 
-        if (rootNodeId != null && treeNode.parentNodeId == null){
-            throw new ApplicationValidationException("please assign parentNodeId");
+        if (!isRoot && StringUtils.isBlank(parentId)){
+            throw new ApplicationValidationException("please assign parentId");
         }
     }
 
     public Boolean isCreateRootNode() {
-        return rootNodeId == null;
+        return isRoot;
     }
-
-    public record TreeNode(@Nonnull String name,
-                           String type,
-                           @Nonnull Boolean expandable,
-                           String parentNodeId) {
-    }
-
 }
 

@@ -7,6 +7,8 @@ import indi.melon.ssc.directory.common.BizTagProperties;
 import indi.melon.ssc.directory.domain.south.repository.TreeNodeRepository;
 import indi.melon.ssc.directory.domain.tree.NodeID;
 import indi.melon.ssc.directory.domain.tree.TreeNode;
+import indi.melon.ssc.directory.domain.tree.exception.NotFoundException;
+import indi.melon.ssc.directory.domain.tree.exception.NotSupportException;
 import indi.melon.ssc.directory.north.local.message.CreateNodeCommand;
 import indi.melon.ssc.directory.north.local.message.DropNodeCommand;
 import indi.melon.ssc.directory.north.local.message.MoveNodeCommand;
@@ -63,45 +65,37 @@ class TreeNodeAppServiceTest extends SscBaseTest {
     @Test
     void should_create_root_node_normally() {
         assertThrows(ApplicationValidationException.class, () -> new CreateNodeCommand(
-                "111", //should not have rootNodeId
-                new CreateNodeCommand.TreeNode(
-                        "iamroot",
-                        "directory",
-                        true,
-                        null
-                )
+                "iamroot", //should not have rootNodeId
+                "directory",
+                true,
+                true,
+                "111"
         ));
 
         assertThrows(ApplicationValidationException.class, () -> new CreateNodeCommand(
-                null,
-                new CreateNodeCommand.TreeNode(
-                        "iamroot",
-                        "directory",
-                        true,
-                        "111" //child node should assign rootNodeId
-                )
+                "iamroot",
+                "directory",
+                true,
+                false,
+                null //child node should assign rootNodeId
         ));
 
-        assertThrows(ApplicationValidationException.class, () -> treeNodeAppService.create(
+        assertThrows(NotFoundException.class, () -> treeNodeAppService.create(
                 new CreateNodeCommand(
-                        "111",// not found rootNode
-                        new CreateNodeCommand.TreeNode(
-                                "iamroot",
-                                "directory",
-                                true,
-                                "111"
-                        )
+                        "iamroot", // not found rootNode
+                        "directory",
+                        true,
+                        false,
+                        "111"
                 )
         ));
 
         CreateNodeCommand rootNodeCreateCommand = new CreateNodeCommand(
-                null,
-                new CreateNodeCommand.TreeNode(
-                        "test_root",
-                        "directory",
-                        true,
-                        null
-                )
+                "test_root",
+                "directory",
+                true,
+                true,
+                null
         );
 
         String rootNodeId = treeNodeAppService.create(rootNodeCreateCommand);
@@ -113,20 +107,18 @@ class TreeNodeAppServiceTest extends SscBaseTest {
         );
         assertNotNull(rootNode);
         assertEquals(new NodeID(rootNodeId), rootNode.getId());
-        assertEquals(rootNodeCreateCommand.treeNode().name(), rootNode.getName());
-        assertEquals(rootNodeCreateCommand.treeNode().type(), rootNode.getType());
-        assertEquals(rootNodeCreateCommand.treeNode().expandable(), rootNode.getExpandable());
+        assertEquals(rootNodeCreateCommand.name(), rootNode.getName());
+        assertEquals(rootNodeCreateCommand.type(), rootNode.getType());
+        assertEquals(rootNodeCreateCommand.expandable(), rootNode.getExpandable());
         assertTrue(rootNode.getChildNodeList() == null || rootNode.getChildNodeList().isEmpty());
-        assertNull(rootNode.getParentId());
+        assertNull(rootNode.getParentNode());
 
         CreateNodeCommand childNodeCreateCommand = new CreateNodeCommand(
-                rootNodeId,
-                new CreateNodeCommand.TreeNode(
-                        "test_child",
-                        "directory",
-                        false,
-                        rootNodeId
-                )
+                "test_child",
+                "directory",
+                false,
+                false,
+                rootNodeId
         );
 
         String childNodeId = treeNodeAppService.create(childNodeCreateCommand);
@@ -135,20 +127,20 @@ class TreeNodeAppServiceTest extends SscBaseTest {
         rootNode = treeNodeRepository.treeNodeOf(new NodeID(rootNodeId));
         assertNotNull(rootNode);
         assertEquals(new NodeID(rootNodeId), rootNode.getId());
-        assertEquals(rootNodeCreateCommand.treeNode().name(), rootNode.getName());
-        assertEquals(rootNodeCreateCommand.treeNode().type(), rootNode.getType());
-        assertEquals(rootNodeCreateCommand.treeNode().expandable(), rootNode.getExpandable());
+        assertEquals(rootNodeCreateCommand.name(), rootNode.getName());
+        assertEquals(rootNodeCreateCommand.type(), rootNode.getType());
+        assertEquals(rootNodeCreateCommand.expandable(), rootNode.getExpandable());
         assertFalse(rootNode.getChildNodeList().isEmpty());
         assertFalse(rootNode.getLocked());
-        assertNull(rootNode.getParentId());
+        assertNull(rootNode.getParentNode());
 
         TreeNode childNode = rootNode.getChildNodeList().get(0);
         assertNotNull(childNode);
         assertEquals(new NodeID(childNodeId), childNode.getId());
-        assertEquals(childNodeCreateCommand.treeNode().name(), childNode.getName());
-        assertEquals(childNodeCreateCommand.treeNode().type(), childNode.getType());
-        assertEquals(childNodeCreateCommand.treeNode().expandable(), childNode.getExpandable());
-        assertEquals(new NodeID(rootNodeId), childNode.getParentId());
+        assertEquals(childNodeCreateCommand.name(), childNode.getName());
+        assertEquals(childNodeCreateCommand.type(), childNode.getType());
+        assertEquals(childNodeCreateCommand.expandable(), childNode.getExpandable());
+        assertEquals(rootNode, childNode.getParentNode());
         assertTrue(childNode.getChildNodeList() == null || childNode.getChildNodeList().isEmpty());
         assertFalse(childNode.getLocked());
 
@@ -157,68 +149,52 @@ class TreeNodeAppServiceTest extends SscBaseTest {
 
     @Test
     void should_rename_node_normally() {
-//        assertThrows(ApplicationValidationException.class, () -> new RenameNodeCommand(
-//                "11",
-//                new RenameNodeCommand.TreeNode(
-//                        "1",
-//                        "  "//newName should not be blank,
-//                )
-//        ));
+        assertThrows(ApplicationValidationException.class, () -> new RenameNodeCommand(
+                "1",
+                "  "//newName should not be blank,
+        ));
 
-        assertThrows(ApplicationValidationException.class, () -> treeNodeAppService.rename(
+        assertThrows(ApplicationDomainException.class, () -> treeNodeAppService.rename(
                 new RenameNodeCommand(
-                        "111",
-                        new RenameNodeCommand.TreeNode(
-                                "222",
-                                "new name"
-                        )
+                        "222",
+                        "new name"
                 )
         ));
 
 
         String rootNodeId = treeNodeAppService.create(
                 new CreateNodeCommand(
-                        null,
-                        new CreateNodeCommand.TreeNode(
-                                "IamRoot",
-                                "directory",
-                                true,
-                                null
-                        )
+                        "IamRoot",
+                        "directory",
+                        true,
+                        true,
+                        null
                 )
         );
 
         assertThrows(ApplicationDomainException.class, () -> treeNodeAppService.rename(
                 new RenameNodeCommand(
                         rootNodeId,
-                        new RenameNodeCommand.TreeNode(
-                                rootNodeId,
-                                "RenameRootNode"
-                        )
+                        "RenameRootNode"
                 )
         ));
 
         final String childNodeName = "IamChild";
         String childNodeId = treeNodeAppService.create(
                 new CreateNodeCommand(
-                        rootNodeId,
-                        new CreateNodeCommand.TreeNode(
-                                childNodeName,
-                                "directory",
-                                true,
-                                rootNodeId
-                        )
+                        childNodeName,
+                        "directory",
+                        true,
+                        false,
+                        rootNodeId
                 )
         );
 
         final String childNodeNewName = "IamChildNew";
         treeNodeAppService.rename(
                 new RenameNodeCommand(
-                        rootNodeId,
-                        new RenameNodeCommand.TreeNode(
-                                childNodeId,
-                                childNodeNewName
-                        )
+                        childNodeId,
+                        childNodeNewName
                 )
         );
 
@@ -230,47 +206,38 @@ class TreeNodeAppServiceTest extends SscBaseTest {
     public void should_drop_node_normally() {
         String rootNodeId = treeNodeAppService.create(
                 new CreateNodeCommand(
-                        null,
-                        new CreateNodeCommand.TreeNode(
-                                "IamRootNode",
-                                "directory",
-                                true,
-                                null
-                        )
+                        "IamRootNode",
+                        "directory",
+                        true,
+                        true,
+                        null
                 )
         );
 
 
         assertThrows(ApplicationDomainException.class, () -> treeNodeAppService.drop(
                 new DropNodeCommand(
-                        rootNodeId,
-                        new DropNodeCommand.TreeNode(
-                                rootNodeId
-                        )
+                        rootNodeId
                 )
         ));
 
         String childNodeId = treeNodeAppService.create(
                 new CreateNodeCommand(
-                        rootNodeId,
-                        new CreateNodeCommand.TreeNode(
-                                "IamChildNode",
-                                "directory",
-                                true,
-                                rootNodeId
-                        )
+                        "IamChildNode",
+                        "directory",
+                        true,
+                        false,
+                        rootNodeId
                 )
         );
 
         String childNodeId2 = treeNodeAppService.create(
                 new CreateNodeCommand(
-                        rootNodeId,
-                        new CreateNodeCommand.TreeNode(
-                                "IamChildNode2",
-                                "file",
-                                false,
-                                childNodeId
-                        )
+                        "IamChildNode2",
+                        "file",
+                        false,
+                        false,
+                        childNodeId
                 )
         );
 
@@ -279,14 +246,11 @@ class TreeNodeAppServiceTest extends SscBaseTest {
 
         treeNodeAppService.drop(
                 new DropNodeCommand(
-                        rootNodeId,
-                        new DropNodeCommand.TreeNode(
-                                childNodeId
-                        )
+                        childNodeId
                 )
         );
 
-        rootNode = treeNodeRepository.treeNodeOf(new NodeID(rootNodeId));
+        rootNode = treeNodeRepository.treeNodeOf(rootNode.getId());
         assertTrue(rootNode.getChildNodeList().isEmpty());
 
         assertNull(treeNodeRepository.treeNodeOf(new NodeID(childNodeId)));
@@ -296,42 +260,33 @@ class TreeNodeAppServiceTest extends SscBaseTest {
     @Test
     public void should_move_node_normally() {
         String rootNodeId = treeNodeAppService.create(new CreateNodeCommand(
-                null,
-                new CreateNodeCommand.TreeNode(
-                        "IamRootNode",
-                        "directory",
-                        true,
-                        null
-                )
+                "IamRootNode",
+                "directory",
+                true,
+                true,
+                null
         ));
 
 
         String childNodeId1 = treeNodeAppService.create(new CreateNodeCommand(
-                rootNodeId,
-                new CreateNodeCommand.TreeNode(
-                        "IamChildNode1",
-                        "directory",
-                        true,
-                        rootNodeId
-                )
+                "IamChildNode1",
+                "directory",
+                true,
+                false,
+                rootNodeId
         ));
 
         String childNodeId2 = treeNodeAppService.create(new CreateNodeCommand(
-                rootNodeId,
-                new CreateNodeCommand.TreeNode(
-                        "IamChildNode2",
-                        "directory",
-                        true,
-                        rootNodeId
-                )
+                "IamChildNode2",
+                "directory",
+                true,
+                false,
+                rootNodeId
         ));
 
         treeNodeAppService.move(new MoveNodeCommand(
-                rootNodeId,
-                new MoveNodeCommand.TreeNode(
-                        childNodeId2,
-                        childNodeId1
-                )
+                childNodeId2,
+                childNodeId1
         ));
 
 
@@ -342,11 +297,8 @@ class TreeNodeAppServiceTest extends SscBaseTest {
 
         assertThrows(ApplicationDomainException.class, () -> {
             treeNodeAppService.move(new MoveNodeCommand(
-                    rootNodeId,
-                    new MoveNodeCommand.TreeNode(
-                            "notExistId",
-                            childNodeId2
-                    )
+                    "notExistId",
+                    childNodeId2
             ));
         });
 

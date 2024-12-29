@@ -1,5 +1,8 @@
 package indi.melon.ssc.configuration;
 
+import indi.melon.ssc.directory.domain.south.factory.TreeNodeFactory;
+import indi.melon.ssc.directory.domain.south.repository.TreeNodeRepository;
+import indi.melon.ssc.directory.domain.tree.TreeNodeManager;
 import indi.melon.ssc.draft.domain.draft.DraftManager;
 import indi.melon.ssc.draft.domain.south.client.DraftFileTreeClient;
 import indi.melon.ssc.draft.domain.south.repository.ConfigurationRepository;
@@ -31,5 +34,13 @@ public class SscDomainBeanConfiguration {
                                      ConfigurationRepository configurationRepository,
                                      DraftFileTreeClient draftFileTreeClient) {
         return new DraftManager(draftRepository, configurationRepository, draftFileTreeClient);
+    }
+
+    @Bean
+    public TreeNodeManager treeNodeManager(TreeNodeRepository treeNodeRepository, TreeNodeFactory treeNodeFactory) {
+        return new TreeNodeManager(
+                treeNodeRepository,
+                treeNodeFactory
+        );
     }
 }
