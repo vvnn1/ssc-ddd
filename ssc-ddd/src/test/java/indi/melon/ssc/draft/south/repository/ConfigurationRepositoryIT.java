@@ -33,7 +33,6 @@ public class ConfigurationRepositoryIT {
     private ConfigurationRepository configurationRepository;
 
     @Test
-    @Transactional(propagation = Propagation.NOT_SUPPORTED)
     public void should_save_and_get_same_configuration() {
         Configuration configuration = buildConfiguration();
         configurationRepository.save(configuration);

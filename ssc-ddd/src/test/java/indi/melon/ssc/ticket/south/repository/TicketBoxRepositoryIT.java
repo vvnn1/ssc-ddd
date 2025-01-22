@@ -30,7 +30,6 @@ public class TicketBoxRepositoryIT {
     private TicketBoxRepository ticketBoxRepository;
 
     @Test
-    @Transactional(propagation = Propagation.NOT_SUPPORTED)
     public void should_save_and_get_same_ticket_box() {
 
         AutoIncrTicketBox box1 = buildAutoIncrTicketBox();

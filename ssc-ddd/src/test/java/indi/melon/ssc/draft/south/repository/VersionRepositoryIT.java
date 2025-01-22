@@ -31,7 +31,6 @@ public class VersionRepositoryIT {
     @Autowired
     private VersionRepository versionRepository;
     @Test
-    @Transactional(propagation = Propagation.NOT_SUPPORTED)
     public void should_save_and_get_same_version() {
         Version version = buildVersion();
 
