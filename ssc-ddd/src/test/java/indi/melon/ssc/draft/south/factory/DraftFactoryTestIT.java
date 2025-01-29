@@ -27,7 +27,7 @@ public class DraftFactoryTestIT extends SscBaseTest {
     @Test
     public void should_build_draft_from_template_normally(){
         Template template = buildTemplate();
-        Draft draft = draftFactory.create("test", template, "aCreator");
+        Draft draft = draftFactory.create(template, "test", "aCreator");
         assertEquals(new DraftID(MockConfiguration.ID_PREFIX + BizTagProperties.DRAFT_BIZ_TAG), draft.getId());
         assertEquals("test", draft.getName());
         assertEquals(template.getContent(), draft.getContent());

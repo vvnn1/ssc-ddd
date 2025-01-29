@@ -1,72 +1,106 @@
 package indi.melon.ssc.draft.domain.draft;
 
-import indi.melon.ssc.draft.domain.configuration.Configuration;
-import indi.melon.ssc.draft.domain.configuration.ConfigurationID;
-import indi.melon.ssc.draft.domain.draft.exception.NotMatchException;
-import indi.melon.ssc.draft.domain.south.client.MockDraftFileClient;
-import indi.melon.ssc.draft.domain.south.repository.MockConfigurationRepository;
-import indi.melon.ssc.draft.domain.south.repository.MockDraftRepository;
+import indi.melon.ssc.draft.domain.south.factory.DraftFactory;
+import indi.melon.ssc.draft.domain.south.factory.MockDraftFactory;
+import indi.melon.ssc.draft.domain.template.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import static indi.melon.ssc.draft.domain.configuration.ConfigurationUtil.buildConfiguration;
-import static org.junit.jupiter.api.Assertions.*;
+import java.time.LocalDateTime;
+import java.util.Collections;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 
 /**
  * @author vvnn1
  * @since 2024/10/26 20:00
  */
 public class DraftManagerTest {
-    private MockDraftFileClient draftFileClient;
-    private MockDraftRepository draftRepository;
-
-    private MockConfigurationRepository configurationRepository;
 
     private DraftManager draftManager;
 
+    private final DraftFactory draftFactory = new MockDraftFactory("mock_");
     @BeforeEach
     public void init() {
-        draftFileClient = new MockDraftFileClient();
-        draftRepository = new MockDraftRepository();
-        configurationRepository = new MockConfigurationRepository();
-        draftManager = new DraftManager(draftRepository, configurationRepository, draftFileClient);
+        draftManager = new DraftManager(
+                draftFactory
+        );
+    }
+
+    private Template buildTemplate() {
+        return new Template(
+                new TemplateID("1"),
+                "mockTemplate",
+                "desc",
+                "content",
+                TemplateCatalog.STREAM,
+                TemplateType.SQL,
+                TemplateTag.BASE
+        );
     }
 
     @Test
-    public void should_create_draft_file_after_create_draft(){
-        Draft draft = new Draft(
-                new DraftID("DraftID"),
-                "testDraftName",
+    public void should_create_draft_by_template_normally(){
+        LocalDateTime beforeCreate = LocalDateTime.now();
+        Draft draft = draftManager.create(
+                buildTemplate(),
+                new EngineID("testEngineId"),
+                "name",
+                "creator"
+        );
+        LocalDateTime afterCreate = LocalDateTime.now();
+
+        assertEquals(new DraftID("mock_name"), draft.getId());
+        assertEquals("name", draft.getName());
+        assertEquals("content", draft.getContent());
+        assertEquals(DraftCatalog.STREAM, draft.getCatalog());
+        assertEquals(DraftType.SQL, draft.getType());
+        assertEquals("creator", draft.getCreator());
+        assertEquals("creator", draft.getCreator());
+        assertTrue(beforeCreate.isBefore(draft.getCreateTime()));
+        assertTrue(afterCreate.isAfter(draft.getCreateTime()));
+        assertTrue(beforeCreate.isBefore(draft.getUpdateTime()));
+        assertTrue(afterCreate.isAfter(draft.getUpdateTime()));
+
+        Configuration configuration = new Configuration()
+                .assignEngine(new EngineID("testEngineId"))
+                .assignAttachments(Collections.emptyList());
+        assertEquals(configuration, draft.getConfiguration());
+    }
+
+    @Test
+    public void should_create_draft_by_draft_normally() {
+        Draft fromDraft = new Draft(
+                new DraftID("1"),
+                "draft1",
+                "content",
                 DraftCatalog.STREAM,
-                "vvnn1"
+                DraftType.SQL,
+                "creator"
         );
 
-        Configuration notMatchConfiguration = buildConfiguration("ConfigurationID");
-        assertThrows(NotMatchException.class, () -> draftManager.create(draft, notMatchConfiguration, new Directory(
-                "DirectoryID",
-                "rootDirectoryID"
-        )));
 
-        Configuration configuration = buildConfiguration("DraftID");
-        draftManager.create(draft, configuration, new Directory(
-                "DirectoryID",
-                "rootDirectoryID"
-        ));
+        LocalDateTime beforeCreate = LocalDateTime.now();
+        Draft draft = draftManager.create(
+                fromDraft,
+                "draft2",
+                "creator2"
+        );
+        LocalDateTime afterCreate = LocalDateTime.now();
 
-        Draft draftDB = draftRepository.draftOf(new DraftID("DraftID"));
-        assertEquals(new DraftID("DraftID"), draftDB.getId());
-        assertEquals("testDraftName", draftDB.getName());
-        assertEquals(DraftCatalog.STREAM, draftDB.getCatalog());
-        assertEquals("vvnn1", draftDB.getCreator());
+        assertEquals(new DraftID("mock_copy_draft2"), draft.getId());
+        assertEquals("draft2", draft.getName());
+        assertEquals("content", draft.getContent());
+        assertEquals(DraftCatalog.STREAM, draft.getCatalog());
+        assertEquals(DraftType.SQL, draft.getType());
+        assertEquals("creator2", draft.getCreator());
+        assertEquals("creator2", draft.getModifier());
+        assertTrue(beforeCreate.isBefore(draft.getCreateTime()));
+        assertTrue(afterCreate.isAfter(draft.getCreateTime()));
+        assertTrue(beforeCreate.isBefore(draft.getUpdateTime()));
+        assertTrue(afterCreate.isAfter(draft.getUpdateTime()));
 
-        Draft draftFile = draftFileClient.getDraft();
-        assertEquals(new DraftID("DraftID"), draftFile.getId());
-        assertEquals("testDraftName", draftFile.getName());
-        assertEquals("DirectoryID", draftFileClient.getDirectoryId());
-        assertEquals("rootDirectoryID", draftFileClient.getRootDirectoryId());
-        assertEquals("STREAM", draftFile.getCatalog().name());
-
-        Configuration configurationDB = configurationRepository.configurationOf(new ConfigurationID("DraftID"));
-        assertNotNull(configurationDB);
     }
 }

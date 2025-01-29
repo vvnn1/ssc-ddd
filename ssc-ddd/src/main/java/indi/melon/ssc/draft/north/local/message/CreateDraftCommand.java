@@ -11,11 +11,6 @@ public record CreateDraftCommand(@Nonnull String name,
                                  @Nonnull String templateId,
                                  @Nonnull String engineId,
                                  @Nonnull String creator,
-                                 @Nonnull Directory directory) {
-    public record Directory(
-        @Nonnull String rootId,
-        @Nonnull String parentId
-    ){
+                                 @Nonnull String directoryId) {
 
-    }
 }

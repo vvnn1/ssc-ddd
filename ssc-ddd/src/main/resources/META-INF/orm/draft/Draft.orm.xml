@@ -19,6 +19,16 @@
             <basic name="createTime"/>
             <basic name="updateTime"/>
 <!--            <basic name="version"/>-->
+            <embedded name="configuration" access="FIELD">
+                <attribute-override name="engineId">
+                    <column name="engineId"/>
+                </attribute-override>
+                <attribute-override name="attachmentIdCollection">
+                    <column name="attachmentIdCollection"/>
+                </attribute-override>
+                <convert attribute-name="attachmentIdCollection" converter="indi.melon.ssc.draft.domain.configuration.AttachmentIDSetConverter">
+                </convert>
+            </embedded>
         </attributes>
     </entity>
 </entity-mappings>

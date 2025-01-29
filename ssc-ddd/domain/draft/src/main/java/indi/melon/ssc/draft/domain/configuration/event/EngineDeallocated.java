@@ -1,7 +1,5 @@
 package indi.melon.ssc.draft.domain.configuration.event;
 
-import indi.melon.ssc.draft.domain.configuration.ConfigurationID;
-import indi.melon.ssc.draft.domain.configuration.EngineID;
 import indi.melon.ssc.domain.common.cqrs.AbstractDomainEvent;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -13,11 +11,11 @@ import lombok.Getter;
 @Getter
 @EqualsAndHashCode(callSuper = false)
 public class EngineDeallocated extends AbstractDomainEvent {
-    private final ConfigurationID configurationID;
-    private final EngineID engineID;
+    private final String draftId;
+    private final String engineId;
 
-    public EngineDeallocated(ConfigurationID configurationID, EngineID engineID) {
-        this.configurationID = configurationID;
-        this.engineID = engineID;
+    public EngineDeallocated(String draftId, String engineId) {
+        this.draftId = draftId;
+        this.engineId = engineId;
     }
 }

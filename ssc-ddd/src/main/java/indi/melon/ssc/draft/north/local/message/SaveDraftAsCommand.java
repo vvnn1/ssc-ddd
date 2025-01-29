@@ -9,14 +9,9 @@ import jakarta.annotation.Nonnull;
 public record SaveDraftAsCommand(
         @Nonnull String name,
         @Nonnull String fromDraftId,
-        @Nonnull Directory directory,
+        @Nonnull String directoryId,
         @Nonnull String creator
 
 ) {
-    public record Directory(
-            @Nonnull String rootId,
-            @Nonnull String parentId
-    ){
 
-    }
 }

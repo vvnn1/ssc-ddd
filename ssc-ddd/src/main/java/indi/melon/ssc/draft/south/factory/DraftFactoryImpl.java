@@ -23,7 +23,7 @@ public class DraftFactoryImpl implements DraftFactory {
     }
 
     @Override
-    public Draft create(String name, Template template, String creator) {
+    public Draft create(Template template, String name, String creator) {
         String id = ticketAppService.require(
                 new TicketCreateCommand<>(
                         DRAFT_BIZ_TAG,
@@ -39,7 +39,7 @@ public class DraftFactoryImpl implements DraftFactory {
     }
 
     @Override
-    public Draft create(String name, Draft draft, String creator) {
+    public Draft create(Draft draft, String name, String creator) {
         String id = ticketAppService.require(
                 new TicketCreateCommand<>(
                         DRAFT_BIZ_TAG,

@@ -1,7 +1,5 @@
 package indi.melon.ssc.draft.domain.configuration.event;
 
-import indi.melon.ssc.draft.domain.configuration.AttachmentID;
-import indi.melon.ssc.draft.domain.configuration.ConfigurationID;
 import indi.melon.ssc.domain.common.cqrs.AbstractDomainEvent;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -14,11 +12,11 @@ import lombok.Getter;
 @Getter
 @EqualsAndHashCode(callSuper = false)
 public class AttachmentDeallocated extends AbstractDomainEvent {
-    private final ConfigurationID configurationId;
-    private final AttachmentID attachmentId;
+    private final String draftId;
+    private final String attachmentId;
 
-    public AttachmentDeallocated(ConfigurationID configurationId, AttachmentID attachmentId) {
-        this.configurationId = configurationId;
+    public AttachmentDeallocated(String draftId, String attachmentId) {
+        this.draftId = draftId;
         this.attachmentId = attachmentId;
     }
 }

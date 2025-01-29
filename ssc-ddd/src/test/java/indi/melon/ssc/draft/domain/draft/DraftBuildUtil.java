@@ -9,7 +9,9 @@ public class DraftBuildUtil {
         Draft draft = new Draft(
                 new DraftID("DraftID1"),
                 "testName",
+                "",
                 DraftCatalog.BATCH,
+                DraftType.SQL,
                 "creator11"
         );
         draft.setContent("aaa");

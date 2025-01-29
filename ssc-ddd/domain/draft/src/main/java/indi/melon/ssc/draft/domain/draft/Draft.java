@@ -1,15 +1,21 @@
 package indi.melon.ssc.draft.domain.draft;
 
-import indi.melon.ssc.draft.domain.draft.exception.NotMatchException;
+import indi.melon.ssc.domain.common.cqrs.AbstractAggregateRoot;
+import indi.melon.ssc.draft.domain.configuration.event.AttachmentAllocated;
+import indi.melon.ssc.draft.domain.configuration.event.AttachmentDeallocated;
+import indi.melon.ssc.draft.domain.configuration.event.EngineAllocated;
+import indi.melon.ssc.draft.domain.configuration.event.EngineDeallocated;
+import indi.melon.ssc.draft.domain.exception.NotMatchException;
 import indi.melon.ssc.draft.domain.template.Template;
 import indi.melon.ssc.draft.domain.version.Version;
+import jakarta.annotation.Nonnull;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 
 import java.time.LocalDateTime;
-import java.util.Objects;
+import java.util.*;
 
 /**
  * @author vvnn1
@@ -18,7 +24,7 @@ import java.util.Objects;
 @Getter
 @Setter(AccessLevel.PACKAGE)
 @ToString
-public class Draft {
+public class Draft extends AbstractAggregateRoot {
     private DraftID id;
     private String name;
     private String content;
@@ -28,42 +34,44 @@ public class Draft {
     private String modifier;
     private LocalDateTime createTime;
     private LocalDateTime updateTime;
+    private Configuration configuration;
 
     public Draft() {
     }
 
-    Draft(DraftID id, String name, DraftCatalog catalog, String creator) {
+    Draft(DraftID id, String name, String content, DraftCatalog catalog, DraftType type, String creator) {
         this.id = id;
         this.name = name;
+        this.content = content;
         this.catalog = catalog;
+        this.type = type;
         this.creator = creator;
         this.modifier = creator;
         this.createTime = LocalDateTime.now();
         this.updateTime = LocalDateTime.now();
+        this.configuration = new Configuration();
     }
 
     public Draft(DraftID id, String name, Template template, String creator) {
-        this.id = id;
-        this.name = name;
-        this.content = template.getContent();
-        this.catalog = template.getCatalog().draftCatalog();
-        this.type = template.getType().draftType();
-        this.creator = creator;
-        this.modifier = creator;
-        this.createTime = LocalDateTime.now();
-        this.updateTime = LocalDateTime.now();
+        this(
+                id,
+                name,
+                template.getContent(),
+                template.getCatalog().draftCatalog(),
+                template.getType().draftType(),
+                creator
+        );
     }
 
     public Draft(DraftID id, String name, Draft draft, String creator) {
-        this.id = id;
-        this.name = name;
-        this.content = draft.content;
-        this.catalog = draft.catalog;
-        this.type = draft.type;
-        this.creator = creator;
-        this.modifier = creator;
-        this.createTime = LocalDateTime.now();
-        this.updateTime = LocalDateTime.now();
+        this(
+                id,
+                name,
+                draft.content,
+                draft.catalog,
+                draft.type,
+                creator
+        );
     }
 
     public void rollback(Version version, String modifier) {
@@ -88,17 +96,88 @@ public class Draft {
     }
 
     public Draft copy(DraftID id, String name, String modifier) {
-        Draft copyDraft = new Draft(
+        Draft draft = new Draft(
                 id,
                 name,
+                content,
                 catalog,
+                type,
                 modifier
         );
-        copyDraft.content = content;
-        return copyDraft;
+        draft.assignEngine(configuration.engineId);
+        draft.assignAttachments(Collections.emptyList());
+        return draft;
+    }
+
+    public void assignEngine(EngineID engineId) {
+        EngineID preEngineId = configuration.engineId;
+        configuration = configuration.assignEngine(engineId);
+        engineId = configuration.engineId;
+
+        if (preEngineId == engineId) {
+            return;
+        }
+
+        if (preEngineId != null) {
+            addEvent(
+                    new EngineDeallocated(
+                            id.value,
+                            preEngineId.value
+                    )
+            );
+        }
+
+        if (engineId != null) {
+            addEvent(
+                    new EngineAllocated(
+                            id.value,
+                            engineId.value
+                    )
+            );
+        }
+    }
+
+    public void assignConfiguration(Configuration configuration) {
+        if (configuration.engineId != null) {
+            assignEngine(configuration.engineId);
+        }
+
+        if (configuration.attachmentIdCollection != null && !configuration.attachmentIdCollection.isEmpty()) {
+            assignAttachments(configuration.attachmentIdCollection);
+        }
+    }
+
+    public void assignAttachments(@Nonnull Collection<AttachmentID> attachmentIds) {
+        Collection<AttachmentID> preAttachmentIds = configuration.getAttachmentIdCollection();
+        configuration = configuration.assignAttachments(attachmentIds);
+        attachmentIds = configuration.getAttachmentIdCollection();
+
+        Set<AttachmentID> removedIds = new HashSet<>(preAttachmentIds);
+        Set<AttachmentID> assignedIds = new HashSet<>(attachmentIds);
+
+        removedIds.removeAll(assignedIds);
+        assignedIds.removeAll(removedIds);
+
+        for (AttachmentID removedId : removedIds) {
+            addEvent(
+                    new AttachmentDeallocated(
+                            id.value,
+                            removedId.value
+                    )
+            );
+        }
+
+        for (AttachmentID assignedId : assignedIds) {
+            addEvent(
+                    new AttachmentAllocated(
+                            id.value,
+                            assignedId.value
+                    )
+            );
+        }
     }
 
     public void formatContent() {
-
+        // TODO  待实现
     }
 }

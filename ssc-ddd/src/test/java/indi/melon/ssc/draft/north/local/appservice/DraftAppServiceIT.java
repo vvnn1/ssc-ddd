@@ -2,15 +2,9 @@ package indi.melon.ssc.draft.north.local.appservice;
 
 import indi.melon.ssc.common.exception.ApplicationDomainException;
 import indi.melon.ssc.common.exception.ApplicationValidationException;
-import indi.melon.ssc.draft.domain.configuration.AttachmentID;
-import indi.melon.ssc.draft.domain.configuration.Configuration;
-import indi.melon.ssc.draft.domain.configuration.ConfigurationID;
-import indi.melon.ssc.draft.domain.configuration.EngineID;
 import indi.melon.ssc.draft.domain.draft.*;
 import indi.melon.ssc.draft.domain.south.client.DraftFileTreeClient;
-import indi.melon.ssc.draft.domain.south.factory.ConfigurationFactory;
 import indi.melon.ssc.draft.domain.south.factory.DraftFactory;
-import indi.melon.ssc.draft.domain.south.repository.ConfigurationRepository;
 import indi.melon.ssc.draft.domain.south.repository.DraftRepository;
 import indi.melon.ssc.draft.domain.south.repository.TemplateRepository;
 import indi.melon.ssc.draft.domain.south.repository.VersionRepository;
@@ -18,14 +12,13 @@ import indi.melon.ssc.draft.domain.template.*;
 import indi.melon.ssc.draft.domain.version.Version;
 import indi.melon.ssc.draft.domain.version.VersionID;
 import indi.melon.ssc.draft.north.local.message.*;
-import indi.melon.ssc.draft.south.factory.MockConfigurationFactory;
 import indi.melon.ssc.draft.south.factory.MockDraftFactory;
-import indi.melon.ssc.draft.south.repository.MockConfigurationRepository;
 import indi.melon.ssc.draft.south.repository.MockDraftRepository;
 import indi.melon.ssc.draft.south.repository.MockTemplateRepository;
 import indi.melon.ssc.draft.south.repository.MockVersionRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
 
 import java.util.Collections;
 
@@ -41,38 +34,27 @@ public class DraftAppServiceIT {
     private DraftAppService draftAppService;
     private DraftManager draftManager;
     private DraftRepository draftRepository;
-    private ConfigurationRepository configurationRepository;
     private DraftFileTreeClient draftFileTreeClient = mock(DraftFileTreeClient.class);
     private DraftFactory draftFactory;
     private TemplateRepository templateRepository;
-    private ConfigurationFactory configurationFactory;
     private VersionRepository versionRepository;
 
     @BeforeEach
     public void init() {
         clearInvocations(draftFileTreeClient);
         draftRepository = new MockDraftRepository();
-        configurationRepository = new MockConfigurationRepository();
         draftFactory = new MockDraftFactory("DRAFT_PREFIX_");
         templateRepository = new MockTemplateRepository();
-        configurationFactory = new MockConfigurationFactory();
         versionRepository = new MockVersionRepository();
 
-        draftManager = new DraftManager(
-                draftRepository,
-                configurationRepository,
-                draftFileTreeClient
-        );
+        draftManager = new DraftManager(draftFactory);
 
         draftAppService =  new DraftAppService(
                 draftManager,
-                draftFactory,
                 templateRepository,
                 draftRepository,
-                configurationFactory,
-                configurationRepository,
-                versionRepository
-        );
+                draftFileTreeClient,
+                versionRepository);
 
         templateRepository.save(new Template(
                 new TemplateID("1"),
@@ -84,21 +66,30 @@ public class DraftAppServiceIT {
                 TemplateTag.BASE
         ));
 
-        draftRepository.save(
-                new Draft(
-                        new DraftID("draftId_1"),
-                        "draftDB",
-                        new Template(
-                                new TemplateID("1"),
-                                "空白的流草稿",
-                                "创建一个空白的流类型的作业草稿。",
-                                "modify the configuration",
-                                TemplateCatalog.STREAM,
-                                TemplateType.SQL,
-                                TemplateTag.BASE
-                        ),
-                        "vvnn1"
+        Draft draft = new Draft(
+                new DraftID("draftId_1"),
+                "draftDB",
+                new Template(
+                        new TemplateID("1"),
+                        "空白的流草稿",
+                        "创建一个空白的流类型的作业草稿。",
+                        "modify the configuration",
+                        TemplateCatalog.STREAM,
+                        TemplateType.SQL,
+                        TemplateTag.BASE
+                ),
+                "vvnn1"
+        );
+        draft.assignEngine(
+                new EngineID("testEngine11")
+        );
+        draft.assignAttachments(
+                Collections.singletonList(
+                        new AttachmentID("AttachmentID222")
                 )
+        );
+        draftRepository.save(
+                draft
         );
 
         versionRepository.save(
@@ -120,15 +111,6 @@ public class DraftAppServiceIT {
                         "vvnn1"
                 )
         );
-
-        Configuration configuration = new Configuration(new DraftID("draftId_1"));
-        configuration.assignEngine(new EngineID("testEngine11"));
-        configuration.assignAttachments(
-                Collections.singleton(
-                        new AttachmentID("AttachmentID222")
-                )
-        );
-        configurationRepository.save(configuration);
     }
 
     @Test
@@ -139,10 +121,7 @@ public class DraftAppServiceIT {
                         "templateNotFoundExceptionId",
                         "testEngineId",
                         "creator",
-                        new CreateDraftCommand.Directory(
-                                "directoryRoot",
-                                "directoryId"
-                        )
+                        "testDirId"
                 )
         ));
 
@@ -153,12 +132,9 @@ public class DraftAppServiceIT {
                         "1",
                         "testEngineId",
                         "creator",
-                        new CreateDraftCommand.Directory(
-                                "directoryRoot",
-                                "directoryId"
-                        )
+                        "testDirId"
                 )
-        );
+        ).getId().getValue();
 
         assertEquals("DRAFT_PREFIX_testDraft", draftId);
 
@@ -172,15 +148,11 @@ public class DraftAppServiceIT {
         assertEquals(DraftType.SQL, draft.getType());
         assertEquals("creator", draft.getCreator());
         assertEquals("creator", draft.getModifier());
-
-        Configuration configuration = configurationRepository.configurationOf(new ConfigurationID("DRAFT_PREFIX_testDraft"));
-        assertNotNull(configuration);
-        assertEquals(new ConfigurationID("DRAFT_PREFIX_testDraft"), configuration.getId());
-        assertEquals(new EngineID("testEngineId"), configuration.getEngineID());
+        assertEquals(new EngineID("testEngineId"), draft.getConfiguration().getEngineId());
 
 
         verify(draftFileTreeClient).create(
-                new Directory("directoryId", "directoryRoot"),
+                "testDirId",
                 draft
         );
     }
@@ -192,10 +164,7 @@ public class DraftAppServiceIT {
                 new SaveDraftAsCommand(
                         "testDraft",
                         "notFoundDraftId",
-                        new SaveDraftAsCommand.Directory(
-                                "rootId",
-                                "parentId"
-                        ),
+                        "parentId",
                         "vvnn1"
                 )
         ));
@@ -204,13 +173,10 @@ public class DraftAppServiceIT {
                 new SaveDraftAsCommand(
                         "testDraft",
                         "draftId_1",
-                        new SaveDraftAsCommand.Directory(
-                                "rootId",
-                                "parentId"
-                        ),
+                        "parentId",
                         "vvnn1"
                 )
-        );
+        ).getId().getValue();
 
         assertEquals("DRAFT_PREFIX_copy_testDraft", draftId);
 
@@ -223,11 +189,13 @@ public class DraftAppServiceIT {
         assertEquals(DraftCatalog.STREAM, draft.getCatalog());
         assertEquals(DraftType.SQL, draft.getType());
 
-        Configuration configuration = configurationRepository.configurationOf(new ConfigurationID("DRAFT_PREFIX_copy_testDraft"));
-        assertNotNull(configuration);
-        assertEquals(new ConfigurationID("DRAFT_PREFIX_copy_testDraft"), configuration.getId());
-        assertEquals(new EngineID("testEngine11"), configuration.getEngineID());
-        assertTrue(configuration.getAttachmentIDCollection().contains(new AttachmentID("AttachmentID222")));
+        assertEquals(new EngineID("testEngine11"), draft.getConfiguration().getEngineId());
+        assertTrue(draft.getConfiguration().getAttachmentIdCollection().contains(new AttachmentID("AttachmentID222")));
+
+        verify(draftFileTreeClient).create(
+                "parentId",
+                draft
+        );
     }
 
     @Test

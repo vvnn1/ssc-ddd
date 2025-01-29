@@ -29,9 +29,9 @@ public class DraftRepositoryImpl implements DraftRepository {
     }
 
     @Override
-    public void save(Draft draft) {
+    public Draft save(Draft draft) {
         try {
-            draftDao.save(draft);
+            return draftDao.save(draft);
         } catch (Exception e){
             throw new ApplicationInfrastructureException("save draft failed. draft: " + draft, e);
         }

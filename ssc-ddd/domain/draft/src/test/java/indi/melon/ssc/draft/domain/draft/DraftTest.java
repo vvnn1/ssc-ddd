@@ -1,6 +1,6 @@
 package indi.melon.ssc.draft.domain.draft;
 
-import indi.melon.ssc.draft.domain.draft.exception.NotMatchException;
+import indi.melon.ssc.draft.domain.exception.NotMatchException;
 import indi.melon.ssc.draft.domain.template.Template;
 import indi.melon.ssc.draft.domain.version.Version;
 import indi.melon.ssc.draft.domain.version.VersionID;
@@ -73,14 +73,18 @@ public class DraftTest {
         String newID = "DraftID1";
         String newName = "DraftBakup";
         String modifier = "vvnn1";
+        LocalDateTime beforeCreate = LocalDateTime.now();
         Draft copyDraft = draft.copy(new DraftID(newID), newName, modifier);
+        LocalDateTime afterCreate = LocalDateTime.now();
         assertEquals(new DraftID(newID), copyDraft.getId());
         assertEquals(newName, copyDraft.getName());
         assertEquals(modifier, copyDraft.getCreator());
         assertEquals(modifier, copyDraft.getModifier());
         assertEquals(draft.getContent(), copyDraft.getContent());
-        assertTrue(LocalDateTime.now().withSecond(0).withNano(0).isBefore(copyDraft.getCreateTime()));
-        assertTrue(LocalDateTime.now().withSecond(0).withNano(0).isBefore(copyDraft.getUpdateTime()));
+        assertTrue(beforeCreate.isBefore(copyDraft.getCreateTime()));
+        assertTrue(afterCreate.isAfter(copyDraft.getCreateTime()));
+        assertTrue(beforeCreate.isBefore(copyDraft.getUpdateTime()));
+        assertTrue(afterCreate.isAfter(copyDraft.getUpdateTime()));
     }
 
     @Test
@@ -105,10 +109,11 @@ public class DraftTest {
         Draft draft = new Draft(
                 new DraftID("DraftID1"),
                 "testName",
+                "TestContent",
                 DraftCatalog.STREAM,
+                DraftType.SQL,
                 "Melon"
         );
-        draft.setContent("TestContent");
         draft.setUpdateTime(LocalDateTime.of(2023, 10, 25, 1, 2));
         return draft;
     }

@@ -1,8 +1,7 @@
-package indi.melon.ssc.draft.south.factory;
+package indi.melon.ssc.draft.domain.south.factory;
 
 import indi.melon.ssc.draft.domain.draft.Draft;
 import indi.melon.ssc.draft.domain.draft.DraftID;
-import indi.melon.ssc.draft.domain.south.factory.DraftFactory;
 import indi.melon.ssc.draft.domain.template.Template;
 
 

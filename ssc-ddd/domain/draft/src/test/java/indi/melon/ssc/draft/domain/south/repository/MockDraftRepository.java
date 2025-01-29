@@ -18,8 +18,9 @@ public class MockDraftRepository implements DraftRepository{
     }
 
     @Override
-    public void save(Draft draft) {
+    public Draft save(Draft draft) {
         db.put(draft.getId(), draft);
+        return draft;
     }
 
     @Override

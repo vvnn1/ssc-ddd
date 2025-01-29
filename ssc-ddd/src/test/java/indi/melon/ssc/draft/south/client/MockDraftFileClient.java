@@ -13,9 +13,8 @@ public class MockDraftFileClient implements DraftFileTreeClient {
     private Directory directory;
 
     @Override
-    public void create(Directory directory, Draft draft) {
+    public void create(String directoryId,  Draft draft) {
         this.draft = draft;
-        this.directory = directory;
     }
 
     public Draft getDraft(){

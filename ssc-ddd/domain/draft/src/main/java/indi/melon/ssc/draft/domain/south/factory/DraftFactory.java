@@ -8,6 +8,6 @@ import indi.melon.ssc.draft.domain.template.Template;
  * @since 2024/10/28 0:46
  */
 public interface DraftFactory {
-    Draft create(String name, Template template, String creator);
-    Draft create(String name, Draft draft, String creator);
+    Draft create(Template template, String name, String creator);
+    Draft create(Draft fromDraft, String name, String creator);
 }

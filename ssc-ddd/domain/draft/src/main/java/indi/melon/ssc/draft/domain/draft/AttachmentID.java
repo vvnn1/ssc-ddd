@@ -1,4 +1,4 @@
-package indi.melon.ssc.draft.domain.configuration;
+package indi.melon.ssc.draft.domain.draft;
 
 import lombok.*;
 
@@ -13,9 +13,8 @@ import java.io.Serializable;
 @ToString
 @EqualsAndHashCode
 @AllArgsConstructor
-@NoArgsConstructor
-public class AttachmentID implements Serializable {
+public final class AttachmentID implements Serializable {
     @Serial
     private static final long serialVersionUID = 6814732986037436521L;
-    String value;
+    final String value;
 }

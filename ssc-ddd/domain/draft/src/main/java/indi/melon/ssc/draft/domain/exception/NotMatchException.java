@@ -1,4 +1,4 @@
-package indi.melon.ssc.draft.domain.draft.exception;
+package indi.melon.ssc.draft.domain.exception;
 
 import indi.melon.ssc.domain.common.cqrs.DomainException;
 

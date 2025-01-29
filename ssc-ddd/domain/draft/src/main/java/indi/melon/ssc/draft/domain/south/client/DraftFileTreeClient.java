@@ -8,5 +8,5 @@ import indi.melon.ssc.draft.domain.draft.Draft;
  * @since 2024/10/26 19:48
  */
 public interface DraftFileTreeClient {
-    void create(Directory directory, Draft draft);
+    void create(String directoryId, Draft draft);
 }

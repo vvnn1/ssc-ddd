@@ -18,5 +18,4 @@ spring:
       - META-INF/orm/ticket/TicketBox.orm.xml
       - META-INF/orm/draft/Version.orm.xml
       - META-INF/orm/draft/Draft.orm.xml
-      - META-INF/orm/draft/Configuration.orm.xml
       - META-INF/orm/draft/Template.orm.xml

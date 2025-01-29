@@ -1,38 +1,38 @@
 package indi.melon.ssc.draft.domain.draft;
 
-import indi.melon.ssc.draft.domain.configuration.Configuration;
-import indi.melon.ssc.draft.domain.draft.exception.NotMatchException;
-import indi.melon.ssc.draft.domain.south.client.DraftFileTreeClient;
-import indi.melon.ssc.draft.domain.south.repository.ConfigurationRepository;
-import indi.melon.ssc.draft.domain.south.repository.DraftRepository;
+import indi.melon.ssc.draft.domain.south.factory.DraftFactory;
+import indi.melon.ssc.draft.domain.template.Template;
 
-import java.util.Objects;
 
 /**
  * @author vvnn1
  * @since 2024/10/26 19:16
  */
 public class DraftManager {
-    private final DraftRepository draftRepository;
-    private final ConfigurationRepository configurationRepository;
-    private final DraftFileTreeClient draftFileTreeClient;
+    private final DraftFactory draftFactory;
 
-    public DraftManager(DraftRepository draftRepository, ConfigurationRepository configurationRepository, DraftFileTreeClient draftFileTreeClient) {
-        this.draftRepository = draftRepository;
-        this.configurationRepository = configurationRepository;
-        this.draftFileTreeClient = draftFileTreeClient;
+    public DraftManager(DraftFactory draftFactory) {
+        this.draftFactory = draftFactory;
     }
 
-    public void create(Draft draft, Configuration configuration, Directory directory) {
-        if (!Objects.equals(draft.getId().getValue(), configuration.getId().getValue())) {
-            throw new NotMatchException("the configuration: " + configuration.getId().getValue() + " does not match the draft: " + draft.getId().value + ".");
-        }
-
-        draftRepository.save(draft);
-        configurationRepository.save(configuration);
-        draftFileTreeClient.create(
-                directory,
-                draft
+    public Draft create(Template template, EngineID engineId, String name, String creator) {
+        Draft draft = draftFactory.create(
+                template,
+                name,
+                creator
         );
+        draft.assignEngine(engineId);
+        return draft;
+    }
+
+    public Draft create(Draft fromDraft, String name, String creator) {
+        Draft draft = draftFactory.create(
+                fromDraft,
+                name,
+                creator
+        );
+
+        draft.assignConfiguration(fromDraft.getConfiguration());
+        return draft;
     }
 }

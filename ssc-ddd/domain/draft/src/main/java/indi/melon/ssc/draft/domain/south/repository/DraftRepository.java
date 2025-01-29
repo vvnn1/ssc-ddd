@@ -9,6 +9,6 @@ import indi.melon.ssc.draft.domain.draft.Draft;
  */
 public interface DraftRepository {
     Draft draftOf(DraftID id);
-    void save(Draft draft);
+    Draft save(Draft draft);
     void delete(DraftID id);
 }
