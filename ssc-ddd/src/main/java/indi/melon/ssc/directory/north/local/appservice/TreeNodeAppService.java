@@ -1,6 +1,9 @@
 package indi.melon.ssc.directory.north.local.appservice;
 
 import indi.melon.ssc.common.exception.ApplicationDomainException;
+import indi.melon.ssc.common.exception.ApplicationValidationException;
+import indi.melon.ssc.directory.domain.south.factory.TreeNodeFactory;
+import indi.melon.ssc.directory.domain.south.repository.TreeNodeRepository;
 import indi.melon.ssc.directory.domain.tree.TreeNode;
 import indi.melon.ssc.directory.domain.tree.NodeID;
 import indi.melon.ssc.directory.domain.tree.TreeNodeManager;
@@ -10,6 +13,7 @@ import indi.melon.ssc.directory.north.local.message.MoveNodeCommand;
 import indi.melon.ssc.directory.north.local.message.RenameNodeCommand;
 import indi.melon.ssc.domain.common.cqrs.DomainException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * @author vvnn1
@@ -18,9 +22,11 @@ import org.springframework.stereotype.Service;
 @Service
 public class TreeNodeAppService {
     private final TreeNodeManager treeNodeManager;
+    private final TreeNodeRepository treeNodeRepository;
 
-    public TreeNodeAppService(TreeNodeManager treeNodeManager) {
-        this.treeNodeManager = treeNodeManager;
+    public TreeNodeAppService(TreeNodeRepository treeNodeRepository, TreeNodeFactory treeNodeFactory) {
+        this.treeNodeManager = new TreeNodeManager(treeNodeRepository, treeNodeFactory);
+        this.treeNodeRepository = treeNodeRepository;
     }
 
     /**
@@ -29,24 +35,29 @@ public class TreeNodeAppService {
      * @param createCommand 新建节点命令
      * @return 所建节点id
      */
+    @Transactional
     public String create(CreateNodeCommand createCommand) {
-        if (createCommand.isCreateRootNode()) {
-            TreeNode rootNode = treeNodeManager.createRootTreeNode(
+        try {
+            if (createCommand.isCreateRootNode()) {
+                TreeNode rootNode = treeNodeManager.createRootTreeNode(
+                        createCommand.name(),
+                        createCommand.type(),
+                        createCommand.expandable()
+                );
+
+                return rootNode.getId().getValue();
+            }
+
+            TreeNode childNode = treeNodeManager.createTreeNode(
                     createCommand.name(),
                     createCommand.type(),
-                    createCommand.expandable()
+                    createCommand.expandable(),
+                    new NodeID(createCommand.parentId())
             );
-
-            return rootNode.getId().getValue();
+            return childNode.getId().getValue();
+        } catch (DomainException e) {
+            throw new ApplicationDomainException("create node error.", e);
         }
-
-        TreeNode childNode = treeNodeManager.createTreeNode(
-                createCommand.name(),
-                createCommand.type(),
-                createCommand.expandable(),
-                new NodeID(createCommand.parentId())
-        );
-        return childNode.getId().getValue();
     }
 
     /**
@@ -54,12 +65,18 @@ public class TreeNodeAppService {
      *
      * @param renameCommand 重命名命令
      */
+    @Transactional
     public void rename(RenameNodeCommand renameCommand) {
+        TreeNode treeNode = treeNodeRepository.treeNodeOf(
+                new NodeID(renameCommand.id())
+        );
+
+        if(treeNode == null) {
+            throw new ApplicationValidationException("node " + renameCommand.id() + " not exist");
+        }
+
         try {
-            treeNodeManager.renameTreeNode(
-                    new NodeID(renameCommand.id()),
-                    renameCommand.newName()
-            );
+            treeNode.rename(renameCommand.newName());
         } catch (DomainException e) {
             throw new ApplicationDomainException("node rename fail.", e);
         }
@@ -70,15 +87,20 @@ public class TreeNodeAppService {
      *
      * @param dropNodeCommand 删除命令
      */
+    @Transactional
     public void drop(DropNodeCommand dropNodeCommand) {
+        TreeNode treeNode = treeNodeRepository.treeNodeOf(
+                new NodeID(dropNodeCommand.id())
+        );
+        if (treeNode == null) {
+            throw new ApplicationValidationException("node " + dropNodeCommand.id() + " not exist");
+        }
+
         try {
-            treeNodeManager.removeTreeNode(
-                    new NodeID(dropNodeCommand.id())
-            );
+            treeNode.removeFromParent();
         } catch (DomainException e) {
             throw new ApplicationDomainException("node drop fail.", e);
         }
-
     }
 
     /**
@@ -86,14 +108,26 @@ public class TreeNodeAppService {
      *
      * @param moveNodeCommand 移动命令
      */
+    @Transactional
     public void move(MoveNodeCommand moveNodeCommand) {
+        TreeNode treeNode = treeNodeRepository.treeNodeOf(
+                new NodeID(moveNodeCommand.id())
+        );
+        if (treeNode == null) {
+            throw new ApplicationValidationException("node " + moveNodeCommand.id() + " not exist");
+        }
+
+        TreeNode parentNode = treeNodeRepository.treeNodeOf(
+                new NodeID(moveNodeCommand.parentId())
+        );
+        if (parentNode == null) {
+            throw new ApplicationValidationException("new parent node " + moveNodeCommand.parentId() + " not exist");
+        }
+
         try {
-            treeNodeManager.moveTreeNode(
-                    new NodeID(moveNodeCommand.nodeId()),
-                    new NodeID(moveNodeCommand.parentId())
-            );
+            treeNode.moveTo(parentNode);
         } catch (DomainException e) {
-            throw new ApplicationDomainException("move node " + moveNodeCommand.nodeId() + " to " + moveNodeCommand.parentId() + " failed.", e);
+            throw new ApplicationDomainException("move node " + moveNodeCommand.id() + " to " + moveNodeCommand.parentId() + " failed.", e);
         }
     }
 }

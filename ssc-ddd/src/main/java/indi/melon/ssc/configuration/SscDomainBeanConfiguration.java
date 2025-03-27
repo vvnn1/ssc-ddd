@@ -34,12 +34,4 @@ public class SscDomainBeanConfiguration {
     public DraftManager draftManager(DraftFactory draftFactory) {
         return new DraftManager(draftFactory);
     }
-
-    @Bean
-    public TreeNodeManager treeNodeManager(TreeNodeRepository treeNodeRepository, TreeNodeFactory treeNodeFactory) {
-        return new TreeNodeManager(
-                treeNodeRepository,
-                treeNodeFactory
-        );
-    }
 }

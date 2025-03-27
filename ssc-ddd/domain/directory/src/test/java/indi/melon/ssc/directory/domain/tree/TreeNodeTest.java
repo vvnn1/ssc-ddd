@@ -124,28 +124,28 @@ class TreeNodeTest {
     @Test
     public void should_rename_normally() {
         TreeNode rootNode = buildDirectoryNode(new NodeID("1"), true);
+        assertThrows(NotSupportException.class, () -> rootNode.rename("rootNodeRename"));
+
         TreeNode node2 = buildDirectoryNode(new NodeID("2"));
         rootNode.add(node2);
 
-        rootNode.rename(new NodeID("2"), "testName");
+        node2.rename("testName");
         assertEquals("testName", rootNode.get(new NodeID("2")).getName());
-
-        assertThrows(NotFoundException.class, () -> rootNode.rename(new NodeID("3"), "testName"));
 
         TreeNode node3 = buildDirectoryNode(new NodeID("3"));
         rootNode.add(node3);
         node3.locked();
-        assertThrows(NotSupportException.class, () -> rootNode.rename(new NodeID("3"), "testName3"));
+        assertThrows(NotSupportException.class, () -> node3.rename("testName3"));
 
         TreeNode node4 = buildDirectoryNode(new NodeID("4"));
         rootNode.add(node4);
         String name4 = node4.getName();
-        assertThrows(AlreadyExistException.class, () -> rootNode.rename(new NodeID("4"), "testName"));
+        assertThrows(AlreadyExistException.class, () -> node4.rename("testName"));
         assertEquals(name4, rootNode.get(new NodeID("4")).getName());
 
         TreeNode node5 = buildFileNode(new NodeID("5"));
         rootNode.add(node5);
-        assertDoesNotThrow(() -> rootNode.rename(new NodeID("5"), "testName"));
+        assertDoesNotThrow(() -> node5.rename("testName"));
         assertEquals("testName", rootNode.get(new NodeID("5")).getName());
 
     }
@@ -197,22 +197,22 @@ class TreeNodeTest {
         TreeNode rootNode = buildDirectoryNode(new NodeID("0"), true);
 
         TreeNode node2 = buildDirectoryNode(new NodeID("2"));
-        assertFalse(rootNode.checkNodeConflict(node2));
+        assertFalse(rootNode.checkConflict(node2));
         rootNode.add(node2);
 
         TreeNode node3 = buildDirectoryNode(new NodeID("3"));
-        assertFalse(rootNode.checkNodeConflict(node3));
+        assertFalse(rootNode.checkConflict(node3));
         rootNode.add(node3);
-        assertFalse(rootNode.checkNodeConflict(node3));
+        assertFalse(rootNode.checkConflict(node3));
 
         TreeNode node4 = buildFileNode(new NodeID("4"));
         node4.setName(node3.getName());
-        assertFalse(rootNode.checkNodeConflict(node4));
+        assertFalse(rootNode.checkConflict(node4));
         rootNode.add(node4);
 
         TreeNode node5 = buildDirectoryNode(new NodeID("5"));
         node5.setName(node3.getName());
-        assertTrue(rootNode.checkNodeConflict(node5));
+        assertTrue(rootNode.checkConflict(node5));
     }
 
     private boolean isCreateTimeAsc(TreeNode node) {

@@ -2,7 +2,6 @@ package indi.melon.ssc.directory.domain.tree;
 
 import indi.melon.ssc.directory.domain.tree.exception.IllegalNodeException;
 import indi.melon.ssc.directory.domain.tree.exception.AlreadyExistException;
-import indi.melon.ssc.directory.domain.tree.exception.NotFoundException;
 import indi.melon.ssc.directory.domain.tree.exception.NotSupportException;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -50,11 +49,11 @@ public class TreeNode {
     }
 
     public boolean add(TreeNode childNode) {
-        if (childNode.isRootNode()) {
+        if (childNode.isRoot) {
             throw new IllegalNodeException("node " + childNode.name + " is root node,it should not be added to others.");
         }
 
-        if (!isSupportModifyChildList()) {
+        if (notSupportModifyChild()) {
             throw new NotSupportException("node " + childNode.name + " is not support add child.");
         }
 
@@ -66,7 +65,7 @@ public class TreeNode {
             throw new NotSupportException("node " + childNode.name + " has parent node,it should not be added to others. please use moveTo.");
         }
 
-        if (checkNodeConflict(childNode)) {
+        if (checkConflict(childNode)) {
             throw new AlreadyExistException("node " + childNode.name + " already exist.");
         }
 
@@ -78,20 +77,29 @@ public class TreeNode {
     }
 
     public boolean remove(TreeNode childNode) {
-        if (!isSupportModifyChildList()) {
+        if (notSupportModifyChild()) {
             throw new NotSupportException("node " + this.id + " is not support remove child.");
         }
 
         return deallocate(childNode);
     }
 
-    public boolean checkNodeConflict(TreeNode childNode) {
+    public boolean removeFromParent() {
+        if (parentNode == null) {
+            throw new NotSupportException("node " + this.id + " is not support remove from parent.");
+        }
+
+        return parentNode.remove(this);
+    }
+
+
+    public boolean checkConflict(TreeNode childNode) {
         if (childNodeList == null) {
             return false;
         }
 
         for (TreeNode treeNode : childNodeList) {
-            if (treeNode == childNode) {
+            if (treeNode == childNode || treeNode.id == childNode.id) {
                 continue;
             }
 
@@ -104,32 +112,29 @@ public class TreeNode {
         return false;
     }
 
-    public void rename(NodeID childId, String newName) {
-        TreeNode childNode = get(childId);
-
-        if (childNode == null) {
-            throw new NotFoundException("node id:" + childId + " not found.");
+    public void rename(String newName) {
+        if (isRoot) {
+            throw new NotSupportException("node " + this.id + " is root node,it should not be renamed.");
         }
 
-        if (!childNode.isSupportModify()) {
-            throw new NotSupportException("node " + childNode.name + " is not support modify.");
+        if (!isSupportModify()) {
+            throw new NotSupportException("node " + name + " is not support modify.");
         }
 
-        boolean conflict = checkNodeConflict(new TreeNode(
-                null,
-                newName,
-                childNode.type,
-                childNode.expandable,
-                childNode.isRoot
-        ));
-        if (conflict) {
-            throw new AlreadyExistException("node " + childNode.name + "(" + childNode.type + ")"+ " already exist.");
+        boolean isConflict = parentNode != null && parentNode.checkConflict(
+                new TreeNode(
+                        id,
+                        newName,
+                        type,
+                        expandable,
+                        isRoot
+                )
+        );
+
+        if (isConflict) {
+            throw new AlreadyExistException("node " + newName + " already exist.");
         }
 
-        childNode.rename(newName);
-    }
-
-    private void rename(String newName) {
         this.name = newName;
         this.updateTime = LocalDateTime.now();
     }
@@ -147,20 +152,12 @@ public class TreeNode {
     }
 
     public boolean moveTo(TreeNode newParentNode){
-        if (isRoot) {
-            throw new NotSupportException("node " + name + " is root node,it can not be child.");
-        }
-
-        if (!newParentNode.isSupportModifyChildList()) {
-            throw new NotSupportException("node " + newParentNode.name + " is locked/un-expandable. child node " + name + " can not add to it.");
-        }
-
         if (parentNode == null) {
             throw new NotSupportException("node " + name + " has no parent. please use add.");
         }
 
-        parentNode.deallocate(this);
-        return newParentNode.allocate(this);
+        parentNode.remove(this);
+        return newParentNode.add(this);
     }
 
     private TreeNode findTreeNode(NodeID nodeID) {
@@ -207,10 +204,6 @@ public class TreeNode {
         return Collections.unmodifiableList(childNodeList);
     }
 
-    boolean isRootNode() {
-        return isRoot;
-    }
-
     public void sortBy(Sort sort) {
         if (!expandable) {
             throw new NotSupportException("node " + name + " is not support sort.");
@@ -222,8 +215,8 @@ public class TreeNode {
         return isRoot;
     }
 
-    private boolean isSupportModifyChildList() {
-        return expandable && isSupportModify();
+    private boolean notSupportModifyChild() {
+        return !expandable || !isSupportModify();
     }
 
     private boolean isSupportModify() {

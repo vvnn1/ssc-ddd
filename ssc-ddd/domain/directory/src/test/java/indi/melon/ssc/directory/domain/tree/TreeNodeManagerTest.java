@@ -1,7 +1,7 @@
 package indi.melon.ssc.directory.domain.tree;
 
+import indi.melon.ssc.directory.domain.south.MockTreeNodeFactory;
 import indi.melon.ssc.directory.domain.south.MockTreeNodeRepository;
-import indi.melon.ssc.directory.domain.tree.exception.NotSupportException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -13,60 +13,54 @@ import static org.junit.jupiter.api.Assertions.*;
  */
 public class TreeNodeManagerTest {
     private TreeNodeManager treeNodeManager;
-    private MockTreeNodeRepository mockTreeNodeRepository;
 
     @BeforeEach
-    public void setUp() throws Exception {
-        mockTreeNodeRepository = new MockTreeNodeRepository();
-        treeNodeManager = new TreeNodeManager(mockTreeNodeRepository, null);
+    public void setUp() {
+        treeNodeManager = new TreeNodeManager(new MockTreeNodeRepository(), new MockTreeNodeFactory("mock_"));
     }
 
     @Test
-    public void should_remove_tree_node_normal() {
-        TreeNode rootNode = buildDirectoryNode(new NodeID("1"), true);
+    public void should_create_root_node_normally() {
+        TreeNode rootNode = treeNodeManager.createRootTreeNode(
+                "root",
+                "directory",
+                true
+        );
 
-        TreeNode node2 = buildDirectoryNode(new NodeID("2"));
-        rootNode.add(node2);
-
-        TreeNode node3 = buildDirectoryNode(new NodeID("3"));
-        rootNode.add(node3);
-
-        TreeNode node4 = buildFileNode(new NodeID("4"));
-        node3.add(node4);
-        node3.locked();
-        mockTreeNodeRepository.save(rootNode);
-
-        assertFalse(treeNodeManager.removeTreeNode(new NodeID("notFound")));
-
-        assertThrows(NotSupportException.class, () -> treeNodeManager.removeTreeNode(new NodeID("1")));
-
-        assertTrue(treeNodeManager.removeTreeNode(new NodeID("2")));
-        assertNull(mockTreeNodeRepository.treeNodeOf(new NodeID("2")));
-
-
+        assertEquals(new NodeID("mock_root"), rootNode.getId());
+        assertEquals("root", rootNode.getName());
+        assertEquals("directory", rootNode.getType());
+        assertTrue(rootNode.getExpandable());
+        assertFalse(rootNode.isLocked());
+        assertTrue(rootNode.isRoot());
     }
 
-    private TreeNode buildDirectoryNode(NodeID id, boolean isRoot) {
-        return new TreeNode(
-                id,
-                "treeNode" + id,
+    @Test
+    public void should_create_node_under_right_parent() {
+        TreeNode rootNode = treeNodeManager.createRootTreeNode(
+                "root",
+                "directory",
+                true
+        );
+
+        TreeNode treeNode1 = treeNodeManager.createTreeNode(
+                "treeNode1",
                 "directory",
                 true,
-                isRoot
+                rootNode.getId()
         );
-    }
 
-    private TreeNode buildDirectoryNode(NodeID id) {
-        return buildDirectoryNode(id, false);
-    }
+        assertNotNull(rootNode.get(treeNode1.getId()));
+        assertSame(rootNode.get(treeNode1.getId()), treeNode1);
 
-    private TreeNode buildFileNode(NodeID id) {
-        return new TreeNode(
-                id,
-                "treeNode" + id,
+        TreeNode treeNode2 = treeNodeManager.createTreeNode(
+                "treeNode2",
                 "file",
                 false,
-                false
+                treeNode1.getId()
         );
+
+        assertNotNull(treeNode1.get(treeNode2.getId()));
+        assertSame(treeNode1.get(treeNode2.getId()), treeNode2);
     }
 }

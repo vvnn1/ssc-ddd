@@ -80,7 +80,7 @@ class TreeNodeAppServiceTest extends SscBaseTest {
                 null //child node should assign rootNodeId
         ));
 
-        assertThrows(NotFoundException.class, () -> treeNodeAppService.create(
+        assertThrows(ApplicationDomainException.class, () -> treeNodeAppService.create(
                 new CreateNodeCommand(
                         "iamroot", // not found rootNode
                         "directory",
@@ -154,7 +154,7 @@ class TreeNodeAppServiceTest extends SscBaseTest {
                 "  "//newName should not be blank,
         ));
 
-        assertThrows(ApplicationDomainException.class, () -> treeNodeAppService.rename(
+        assertThrows(ApplicationValidationException.class, () -> treeNodeAppService.rename(
                 new RenameNodeCommand(
                         "222",
                         "new name"
@@ -243,6 +243,8 @@ class TreeNodeAppServiceTest extends SscBaseTest {
 
         TreeNode rootNode = treeNodeRepository.treeNodeOf(new NodeID(rootNodeId));
         assertFalse(rootNode.getChildNodeList().isEmpty());
+        assertNotNull(rootNode.get(new NodeID(childNodeId)));
+        assertNotNull(rootNode.get(new NodeID(childNodeId2)));
 
         treeNodeAppService.drop(
                 new DropNodeCommand(
@@ -252,9 +254,8 @@ class TreeNodeAppServiceTest extends SscBaseTest {
 
         rootNode = treeNodeRepository.treeNodeOf(rootNode.getId());
         assertTrue(rootNode.getChildNodeList().isEmpty());
-
-        assertNull(treeNodeRepository.treeNodeOf(new NodeID(childNodeId)));
-        assertNull(treeNodeRepository.treeNodeOf(new NodeID(childNodeId2)));
+        assertNull(rootNode.get(new NodeID(childNodeId)));
+        assertNull(rootNode.get(new NodeID(childNodeId2)));
     }
 
     @Test
@@ -295,7 +296,7 @@ class TreeNodeAppServiceTest extends SscBaseTest {
         TreeNode childNode1 = rootNode.getChildNodeList().get(0);
         assertEquals("IamChildNode1", childNode1.getName());
 
-        assertThrows(ApplicationDomainException.class, () -> {
+        assertThrows(ApplicationValidationException.class, () -> {
             treeNodeAppService.move(new MoveNodeCommand(
                     "notExistId",
                     childNodeId2
