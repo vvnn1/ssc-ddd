@@ -1,12 +1,11 @@
 package indi.melon.ssc.ticket.domain.ticket;
 
-import indi.melon.ssc.ticket.domain.south.repository.TicketBoxRepository;
+import indi.melon.ssc.ticket.domain.south.repository.TicketSegmentRepository;
 import indi.melon.ssc.ticket.domain.thread.ParallelThread;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.Field;
-import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.CyclicBarrier;
@@ -21,61 +20,79 @@ import static org.junit.jupiter.api.Assertions.*;
 class BoxManagerTest {
 
     private BoxManager boxManager;
-    private TicketBoxRepository repository;
+    private TicketSegmentRepository repository;
     private static final int cacheSize = 3;
     private static final long currentMaxTicket = 0L;
     private static final int ticketNum = 10;
 
     @BeforeEach
-    public void init(){
-        repository = new TestTicketBoxRepositoryImpl();
+    public void init() {
+        repository = new MockTicketSegmentRepositoryImpl();
         boxManager = new BoxManager(repository, cacheSize);
     }
 
     @Test
     public void should_get_right_box_then_cache_some_box_and_update_currentMaxTicket() {
         assertNull(boxManager.get(
-                new BoxID("ticket_3")
+                new SegmentID("ticket_3")
         ));
 
-        BoxID boxID = new BoxID("ticket_1");
+        SegmentID segmentId = new SegmentID("ticket_1");
         TicketBox<?> ticketBox = boxManager.get(
-                boxID
+                segmentId
         );
 
-        assertEquals(boxID, ticketBox.getId());
-        Map<BoxID, Queue<TicketBox<?>>> map = getTicketBoxQueue();
-        Queue<TicketBox<?>> boxQueue = map.get(boxID);
+        assertEquals(segmentId, ticketBox.getSegmentId());
+        Map<SegmentID, Queue<TicketBox<?>>> map = getTicketBoxQueue();
+        Queue<TicketBox<?>> boxQueue = map.get(segmentId);
         assertEquals(boxQueue.size(), cacheSize);
 
-        AutoIncrTicketBox dbBox = (AutoIncrTicketBox) repository.ticketBoxOf(boxID);
+        AutoIncrTicketSegment dbBox = (AutoIncrTicketSegment) repository.ticketSegmentOf(segmentId);
         assertEquals(dbBox.getCurrentMaxTicket(), currentMaxTicket + cacheSize * ticketNum);
     }
 
     @Test
-    public void should_release_right_box_then_re_full_cache_and_update_currentMaxTicket(){
-        BoxID boxID = new BoxID("ticket_1");
+    public void should_release_right_box_then_re_full_cache_and_update_currentMaxTicket() {
+        long startId = 0L;
+        SegmentID segmentId = new SegmentID("ticket_1");
         TicketBox<?> ticketBox = boxManager.get(
-                boxID
+                segmentId
         );
 
-        Map<BoxID, Queue<TicketBox<?>>> map = getTicketBoxQueue();
-        Queue<TicketBox<?>> boxQueue = map.get(boxID);
+        Map<SegmentID, Queue<TicketBox<?>>> map = getTicketBoxQueue();
+        Queue<TicketBox<?>> boxQueue = map.get(segmentId);
         assertEquals(boxQueue.peek(), ticketBox);
+
+
+        while (ticketBox.hasNext()) {
+            Long id = (Long) ticketBox.next();
+            assertSame(id, ++startId);
+        }
 
         boxManager.release(ticketBox);
         assertNotEquals(boxQueue.peek(), ticketBox);
         assertEquals(boxQueue.size(), cacheSize);
 
-        AutoIncrTicketBox dbBox = (AutoIncrTicketBox) repository.ticketBoxOf(boxID);
+        AutoIncrTicketSegment dbBox = (AutoIncrTicketSegment) repository.ticketSegmentOf(segmentId);
         assertEquals(dbBox.getCurrentMaxTicket(), currentMaxTicket + (cacheSize + 1) * ticketNum);
 
         TicketBox<?> peekBox = boxQueue.peek();
         boxManager.release(ticketBox);
         assertEquals(boxQueue.peek(), peekBox);
 
-        AutoIncrTicketBox dbBox2 = (AutoIncrTicketBox) repository.ticketBoxOf(boxID);
+        AutoIncrTicketSegment dbBox2 = (AutoIncrTicketSegment) repository.ticketSegmentOf(segmentId);
         assertEquals(dbBox2.getCurrentMaxTicket(), currentMaxTicket + (cacheSize + 1) * ticketNum);
+
+        TicketBox<?> ticketBox2 = boxManager.get(
+                segmentId
+        );
+        while (ticketBox2.hasNext()) {
+            Long id = (Long) ticketBox2.next();
+            assertSame(id, ++startId);
+        }
+        boxManager.release(ticketBox2);
+        AutoIncrTicketSegment dbBox3 = (AutoIncrTicketSegment) repository.ticketSegmentOf(segmentId);
+        assertEquals(dbBox3.getCurrentMaxTicket(), currentMaxTicket + (cacheSize + 2) * ticketNum);
     }
 
     @Test
@@ -83,12 +100,12 @@ class BoxManagerTest {
         CountDownLatch countDownLatch = new CountDownLatch(4);
         CyclicBarrier cyclicBarrier = new CyclicBarrier(4);
 
-        BoxID boxID = new BoxID("ticket_1");
+        SegmentID segmentId = new SegmentID("ticket_1");
         final TicketBox<?>[] boxs = new TicketBox<?>[4];
-        startGetBoxThread(cyclicBarrier, countDownLatch, boxID, boxs, 0);
-        startGetBoxThread(cyclicBarrier, countDownLatch, boxID, boxs, 1);
-        startGetBoxThread(cyclicBarrier, countDownLatch, boxID, boxs, 2);
-        startGetBoxThread(cyclicBarrier, countDownLatch, boxID, boxs, 3);
+        startGetBoxThread(cyclicBarrier, countDownLatch, segmentId, boxs, 0);
+        startGetBoxThread(cyclicBarrier, countDownLatch, segmentId, boxs, 1);
+        startGetBoxThread(cyclicBarrier, countDownLatch, segmentId, boxs, 2);
+        startGetBoxThread(cyclicBarrier, countDownLatch, segmentId, boxs, 3);
 
         countDownLatch.await();
 
@@ -98,11 +115,11 @@ class BoxManagerTest {
     }
 
     @Test
-    public void should_enable_cache_when_repository_is_unable(){
+    public void should_enable_cache_when_repository_is_unable() {
 
         for (int i = 0; i < cacheSize; i++) {
             TicketBox<?> ticketBox = boxManager.get(
-                    new BoxID("ticket_1")
+                    new SegmentID("ticket_1")
             );
             assertNotNull(ticketBox);
             boxManager.release(ticketBox);
@@ -112,14 +129,14 @@ class BoxManagerTest {
 
         for (int i = 0; i < cacheSize; i++) {
             TicketBox<?> ticketBox = boxManager.get(
-                    new BoxID("ticket_1")
+                    new SegmentID("ticket_1")
             );
             assertNotNull(ticketBox);
             boxManager.release(ticketBox);
         }
 
         TicketBox<?> ticketBox = boxManager.get(
-                new BoxID("ticket_1")
+                new SegmentID("ticket_1")
         );
 
         assertNull(ticketBox);
@@ -143,11 +160,11 @@ class BoxManagerTest {
         assertFalse(getNullBox.get(), "should not get null box");
     }
 
-    private void setRepository(TicketBoxRepository repository){
+    private void setRepository(TicketSegmentRepository repository) {
         try {
-            Field repositoryField = BoxManager.class.getDeclaredField("ticketBoxRepository");
+            Field repositoryField = BoxManager.class.getDeclaredField("ticketSegmentRepository");
             repositoryField.setAccessible(true);
-            repositoryField.set(boxManager,repository);
+            repositoryField.set(boxManager, repository);
         } catch (NoSuchFieldException | IllegalAccessException e) {
             throw new RuntimeException(e);
         }
@@ -156,12 +173,12 @@ class BoxManagerTest {
     private void randomGetOrRelease(CyclicBarrier cyclicBarrier,
                                     CountDownLatch countDownLatch,
                                     Set<TicketBox<?>> boxSet,
-                                    AtomicBoolean getNullBox){
+                                    AtomicBoolean getNullBox) {
         new ParallelThread(cyclicBarrier, countDownLatch, () -> {
             for (int i = 0; i < 5000; i++) {
-                TicketBox<?> ticketBox = boxManager.get(new BoxID(Math.random() > 0.5 ? "ticket_1" : "ticket_2"));
+                TicketBox<?> ticketBox = boxManager.get(new SegmentID(Math.random() > 0.5 ? "ticket_1" : "ticket_2"));
 
-                if (ticketBox == null){
+                if (ticketBox == null) {
                     getNullBox.set(true);
                     return;
                 }
@@ -176,90 +193,70 @@ class BoxManagerTest {
 
     private void startGetBoxThread(CyclicBarrier cyclicBarrier,
                                    CountDownLatch countDownLatch,
-                                   BoxID boxID,
+                                   SegmentID segmentId,
                                    TicketBox<?>[] boxs,
                                    int index) {
         new ParallelThread(cyclicBarrier, countDownLatch, () -> {
-            boxs[index] = boxManager.get(boxID);
+            boxs[index] = boxManager.get(segmentId);
         }).start();
     }
 
-    private Map<BoxID, Queue<TicketBox<?>>> getTicketBoxQueue(){
+    private Map<SegmentID, Queue<TicketBox<?>>> getTicketBoxQueue() {
         try {
             Field boxContainerField = BoxManager.class.getDeclaredField("boxContainer");
             boxContainerField.setAccessible(true);
-            return (Map<BoxID, Queue<TicketBox<?>>>) boxContainerField.get(boxManager);
+            return (Map<SegmentID, Queue<TicketBox<?>>>) boxContainerField.get(boxManager);
         } catch (NoSuchFieldException | IllegalAccessException e) {
             throw new RuntimeException(e);
         }
     }
 
-    static class ExceptionTicketBoxRepositoryImpl implements TicketBoxRepository{
-
+    static class ExceptionTicketBoxRepositoryImpl implements TicketSegmentRepository {
         @Override
-        public TicketBox<?> ticketBoxOf(BoxID id) {
+        public TicketSegment<?> ticketSegmentOf(SegmentID id) {
             throw new RuntimeException("mock exception");
         }
 
         @Override
-        public void save(TicketBox<?> ticketBox) {
+        public void save(TicketSegment<?> ticketBox) {
+
         }
 
         @Override
-        public void delete(BoxID id) {
+        public void delete(SegmentID id) {
 
         }
     }
 
-    static class TestTicketBoxRepositoryImpl implements TicketBoxRepository{
-        private final Map<BoxID, AutoIncrTicketBox> dbMap = new HashMap<>(){{
+    static class MockTicketSegmentRepositoryImpl implements TicketSegmentRepository {
+        private final Map<SegmentID, AutoIncrTicketSegment> dbMap = new HashMap<>() {{
             put(
-                    new BoxID("ticket_1"),
-                    createTicketBox(new BoxID("ticket_1"))
+                    new SegmentID("ticket_1"),
+                    createTicketBox(new SegmentID("ticket_1"))
             );
             put(
-                    new BoxID("ticket_2"),
-                    createTicketBox(new BoxID("ticket_2"))
+                    new SegmentID("ticket_2"),
+                    createTicketBox(new SegmentID("ticket_2"))
             );
         }};
 
-
         @Override
-        public TicketBox<?> ticketBoxOf(BoxID id) {
-            TicketBox<Long> ticketBox = dbMap.get(id);
-            if (ticketBox == null){
-                return null;
-            }
-            TicketBox<Long> testTicketBox = new AutoIncrTicketBox();
-            copy(ticketBox, testTicketBox);
-            return testTicketBox;
+        public TicketSegment<?> ticketSegmentOf(SegmentID id) {
+            return dbMap.get(id);
         }
 
         @Override
-        public void save(TicketBox<?> ticketBox) {
-            TicketBox ticketBoxDB = new AutoIncrTicketBox();
-            copy(ticketBox, ticketBoxDB);
-            dbMap.put(ticketBoxDB.getId(), (AutoIncrTicketBox) ticketBoxDB);
+        public void save(TicketSegment<?> ticketSegment) {
+            dbMap.put(ticketSegment.getId(), (AutoIncrTicketSegment) ticketSegment);
         }
 
         @Override
-        public void delete(BoxID id) {
-
+        public void delete(SegmentID id) {
+            dbMap.remove(id);
         }
 
-        private <T> void copy(TicketBox<T> box1, TicketBox<T> box2){
-            box2.setId(box1.getId());
-            box2.setTicketNum(box1.getTicketNum());
-            box2.setUpdateTime(box1.getUpdateTime());
-            box2.setDesc(box1.getDesc());
-            box2.setType(box1.getType());
-            if (box2 instanceof AutoIncrTicketBox b2 && box1 instanceof AutoIncrTicketBox b1){
-                b2.setCurrentMaxTicket(b1.getCurrentMaxTicket());
-            }
-        }
-
-        private AutoIncrTicketBox createTicketBox(BoxID id){
-            return new AutoIncrTicketBox(
+        private AutoIncrTicketSegment createTicketBox(SegmentID id) {
+            return new AutoIncrTicketSegment(
                     id,
                     currentMaxTicket,
                     ticketNum,

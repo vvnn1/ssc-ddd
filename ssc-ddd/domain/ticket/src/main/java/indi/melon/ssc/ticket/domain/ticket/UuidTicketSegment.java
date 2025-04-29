@@ -9,11 +9,9 @@ import java.util.UUID;
  * @author vvnn1
  * @since 2024/9/20 20:21
  */
-public class UuidTicketBox extends TicketBox<String>{
-    public UuidTicketBox() {
-    }
+public class UuidTicketSegment extends TicketSegment<String>{
 
-    public UuidTicketBox(BoxID id, Integer ticketNum, String desc) {
+    public UuidTicketSegment(SegmentID id, Integer ticketNum, String desc) {
         super(id, ticketNum, desc, TicketEnum.UUID);
     }
 

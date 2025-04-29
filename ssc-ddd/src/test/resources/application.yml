@@ -15,7 +15,7 @@ spring:
       ddl-auto: create
     mapping-resources:
       - META-INF/orm/directory/TreeNode.orm.xml
-      - META-INF/orm/ticket/TicketBox.orm.xml
+      - META-INF/orm/ticket/TicketSegment.orm.xml
       - META-INF/orm/draft/Version.orm.xml
       - META-INF/orm/draft/Draft.orm.xml
       - META-INF/orm/draft/Template.orm.xml

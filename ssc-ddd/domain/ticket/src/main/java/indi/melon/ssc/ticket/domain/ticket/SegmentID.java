@@ -14,7 +14,7 @@ import java.io.Serializable;
 @EqualsAndHashCode
 @AllArgsConstructor
 @NoArgsConstructor
-public class BoxID implements Serializable {
+public class SegmentID implements Serializable {
     @Serial
     private static final long serialVersionUID = -6134017593036040140L;
     String bizTag;

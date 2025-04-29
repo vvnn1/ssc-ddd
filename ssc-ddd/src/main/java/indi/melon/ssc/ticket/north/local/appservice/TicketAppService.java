@@ -1,13 +1,10 @@
 package indi.melon.ssc.ticket.north.local.appservice;
 
 import indi.melon.ssc.common.exception.ApplicationDomainException;
-import indi.melon.ssc.common.exception.ApplicationValidationException;
-import indi.melon.ssc.ticket.domain.ticket.BoxID;
+import indi.melon.ssc.ticket.domain.ticket.SegmentID;
 import indi.melon.ssc.ticket.domain.ticket.TicketManager;
 import indi.melon.ssc.ticket.north.local.message.TicketCreateCommand;
 import org.springframework.stereotype.Service;
-
-import java.util.Objects;
 
 /**
  * @author wangmenglong
@@ -28,7 +25,7 @@ public class TicketAppService {
 
         try {
             Object ticket = ticketManager.require(
-                    new BoxID(bizTag)
+                    new SegmentID(bizTag)
             );
             return clazz.cast(ticket);
         }catch (Exception e){

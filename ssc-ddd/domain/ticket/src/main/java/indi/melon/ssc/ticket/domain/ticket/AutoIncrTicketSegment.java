@@ -4,7 +4,6 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.Collection;
 
@@ -14,14 +13,11 @@ import java.util.Collection;
  */
 @Getter
 @Setter(AccessLevel.PACKAGE)
-public class AutoIncrTicketBox extends TicketBox<Long>{
+public class AutoIncrTicketSegment extends TicketSegment<Long>{
 
     private Long currentMaxTicket;
 
-    public AutoIncrTicketBox() {
-    }
-
-    public AutoIncrTicketBox(BoxID id, Long currentMaxTicket, Integer ticketNum, String desc) {
+    public AutoIncrTicketSegment(SegmentID id, Long currentMaxTicket, Integer ticketNum, String desc) {
         super(id, ticketNum, desc, TicketEnum.AUTO_INCREMENT);
         this.currentMaxTicket = currentMaxTicket;
     }

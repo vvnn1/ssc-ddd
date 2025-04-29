@@ -2,12 +2,12 @@ package indi.melon.ssc.ticket.north.local.appservice;
 
 import indi.melon.ssc.SscBaseTest;
 import indi.melon.ssc.common.exception.ApplicationValidationException;
-import indi.melon.ssc.ticket.domain.south.repository.TicketBoxRepository;
-import indi.melon.ssc.ticket.domain.ticket.AutoIncrTicketBox;
-import indi.melon.ssc.ticket.domain.ticket.BoxID;
-import indi.melon.ssc.ticket.domain.ticket.UuidTicketBox;
+import indi.melon.ssc.ticket.domain.south.repository.TicketSegmentRepository;
+import indi.melon.ssc.ticket.domain.ticket.AutoIncrTicketSegment;
+import indi.melon.ssc.ticket.domain.ticket.SegmentID;
+import indi.melon.ssc.ticket.domain.ticket.UuidTicketSegment;
 import indi.melon.ssc.ticket.north.local.message.TicketCreateCommand;
-import indi.melon.ssc.ticket.south.repository.MockTicketBoxRepository;
+import indi.melon.ssc.ticket.south.repository.MockTicketSegmentRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,25 +26,25 @@ class TicketAppServiceIT extends SscBaseTest {
     @Autowired
     private TicketAppService ticketAppService;
     @Autowired
-    private TicketBoxRepository ticketBoxRepository;
+    private TicketSegmentRepository ticketSegmentRepository;
 
     @BeforeEach
     void setUp() {
-        AutoIncrTicketBox autoIncrTicketBox = new AutoIncrTicketBox(
-                new BoxID("record"),
+        AutoIncrTicketSegment autoIncrTicketSegment = new AutoIncrTicketSegment(
+                new SegmentID("record"),
                 0L,
                 10,
                 "auto incr box"
         );
 
-        ticketBoxRepository.save(autoIncrTicketBox);
+        ticketSegmentRepository.save(autoIncrTicketSegment);
 
-        UuidTicketBox uuidTicketBox = new UuidTicketBox(
-                new BoxID("treeNode"),
+        UuidTicketSegment uuidTicketSegment = new UuidTicketSegment(
+                new SegmentID("treeNode"),
                 10,
                 "uuid box"
         );
-        ticketBoxRepository.save(uuidTicketBox);
+        ticketSegmentRepository.save(uuidTicketSegment);
     }
 
 
@@ -75,8 +75,8 @@ class TicketAppServiceIT extends SscBaseTest {
     @TestConfiguration
     static class MockConfiguration {
         @Bean
-        public TicketBoxRepository ticketBoxRepository() {
-            return new MockTicketBoxRepository();
+        public TicketSegmentRepository ticketSegmentRepository() {
+            return new MockTicketSegmentRepository();
         }
     }
 }

@@ -11,19 +11,19 @@ import static org.junit.jupiter.api.Assertions.*;
  * @author vvnn1
  * @since 2024/9/21 12:01
  */
-class UuidTicketBoxTest {
+class UuidTicketSegmentTest {
 
     @Test
     void should_gen_ticketNum_tickets() {
-        UuidTicketBox uuidTicketBox = createUuidTicketBox();
-        Collection<String> tickets = uuidTicketBox.genTickets(uuidTicketBox.getTicketNum());
+        UuidTicketSegment uuidTicketSegment = createUuidTicketBox();
+        Collection<String> tickets = uuidTicketSegment.genTickets();
         HashSet<String> set = new HashSet<>(tickets);
-        assertEquals(set.size(), uuidTicketBox.getTicketNum());
+        assertEquals(set.size(), uuidTicketSegment.getTicketNum());
     }
 
-    private UuidTicketBox createUuidTicketBox(){
-        return new UuidTicketBox(
-                new BoxID("test_id"),
+    private UuidTicketSegment createUuidTicketBox(){
+        return new UuidTicketSegment(
+                new SegmentID("test_id"),
                 5,
                 "for test"
         );

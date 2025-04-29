@@ -1,11 +1,10 @@
 package indi.melon.ssc.ticket.domain.ticket;
 
-import indi.melon.ssc.ticket.domain.south.repository.TicketBoxRepository;
+import indi.melon.ssc.ticket.domain.south.repository.TicketSegmentRepository;
 import indi.melon.ssc.ticket.domain.thread.ParallelThread;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.CyclicBarrier;
@@ -25,17 +24,16 @@ class TicketManagerTest {
 
     @BeforeEach
     public void init(){
-        TicketBoxRepository repository = new TestTicketBoxRepositoryImpl();
-        BoxManager boxManager = new BoxManager(repository, cacheSize);
-        ticketManager = new TicketManager(boxManager);
+        TicketSegmentRepository repository = new TestTicketSegmentRepositoryImpl();
+        ticketManager = new TicketManager(repository, cacheSize);
     }
 
     @Test
     void should_return_ticket_by_right_id_and_return_null_if_id_not_exist() {
-        Object ticket_1 = ticketManager.require(new BoxID("ticket_1"));
+        Object ticket_1 = ticketManager.require(new SegmentID("ticket_1"));
         assertNotNull(ticket_1);
 
-        Object ticket_3 = ticketManager.require(new BoxID("ticket_3"));
+        Object ticket_3 = ticketManager.require(new SegmentID("ticket_3"));
         assertNull(ticket_3);
     }
 
@@ -59,7 +57,7 @@ class TicketManagerTest {
     private void multiThreadRequireTicket(CyclicBarrier cyclicBarrier, CountDownLatch countDownLatch, Set<Object> tickets, AtomicBoolean isUniq) {
         new ParallelThread(cyclicBarrier, countDownLatch, () -> {
             for (int i = 0; i < 1000; i++) {
-                Object ticket = ticketManager.require(new BoxID("ticket_1"));
+                Object ticket = ticketManager.require(new SegmentID("ticket_1"));
                 if (tickets.contains(ticket)) {
                     isUniq.set(false);
                     return;
@@ -69,54 +67,36 @@ class TicketManagerTest {
         }).start();
     }
 
-    static class TestTicketBoxRepositoryImpl implements TicketBoxRepository{
-        private final Map<BoxID, AutoIncrTicketBox> dbMap = new HashMap<>(){{
+    static class TestTicketSegmentRepositoryImpl implements TicketSegmentRepository{
+        private final Map<SegmentID, TicketSegment<?>> dbMap = new HashMap<>(){{
             put(
-                    new BoxID("ticket_1"),
-                    createTicketBox(new BoxID("ticket_1"))
+                    new SegmentID("ticket_1"),
+                    createTicketBox(new SegmentID("ticket_1"))
             );
             put(
-                    new BoxID("ticket_2"),
-                    createTicketBox(new BoxID("ticket_2"))
+                    new SegmentID("ticket_2"),
+                    createTicketBox(new SegmentID("ticket_2"))
             );
         }};
 
 
         @Override
-        public TicketBox<?> ticketBoxOf(BoxID id) {
-            TicketBox<Long> ticketBox = dbMap.get(id);
-            if (ticketBox == null){
-                return null;
-            }
-            TicketBox<Long> testTicketBox = new AutoIncrTicketBox();
-            copy(ticketBox, testTicketBox);
-            return testTicketBox;
+        public TicketSegment<?> ticketSegmentOf(SegmentID id) {
+            return dbMap.get(id);
         }
 
         @Override
-        public void save(TicketBox<?> ticketBox) {
-            TicketBox autoIncrTicketBox = dbMap.get(ticketBox.getId());
-            copy(ticketBox, autoIncrTicketBox);
+        public void save(TicketSegment<?> ticketSegment) {
+            dbMap.put(ticketSegment.getId(), ticketSegment);
         }
 
         @Override
-        public void delete(BoxID id) {
-
+        public void delete(SegmentID id) {
+            dbMap.remove(id);
         }
 
-        private <T> void copy(TicketBox<T> box1, TicketBox<T> box2){
-            box2.setId(box1.getId());
-            box2.setTicketNum(box1.getTicketNum());
-            box2.setUpdateTime(box1.getUpdateTime());
-            box2.setDesc(box1.getDesc());
-            box2.setType(box1.getType());
-            if (box2 instanceof AutoIncrTicketBox b2 && box1 instanceof AutoIncrTicketBox b1){
-                b2.setCurrentMaxTicket(b1.getCurrentMaxTicket());
-            }
-        }
-
-        private AutoIncrTicketBox createTicketBox(BoxID id){
-            return new AutoIncrTicketBox(
+        private AutoIncrTicketSegment createTicketBox(SegmentID id){
+            return new AutoIncrTicketSegment(
                     id,
                     currentMaxTicket,
                     ticketNum,

@@ -17,22 +17,34 @@ class TicketBoxTest {
 
     @Test
     public void should_be_thread_safe_and_has_a_correct_sequence() throws InterruptedException {
+        final long tickets_count = 10000;
+        List<Long> tickets = new ArrayList<>();
+        for (int i = 0; i < tickets_count; i++) {
+            tickets.add((long) i);
+        }
+
         CyclicBarrier cyclicBarrier = new CyclicBarrier(3);
         CountDownLatch countDownLatch = new CountDownLatch(3);
-        Set<Integer> results = Collections.synchronizedSet(new TreeSet<>());
-        TestTicketBox testTicketBox = new TestTicketBox();
+        Set<Long> results = Collections.synchronizedSet(new TreeSet<>());
+        TicketBox<Long> testTicketBox = new TicketBox<>(
+                new TicketSegment<>(new SegmentID("test_ticket"), 1000, "test", TicketEnum.AUTO_INCREMENT) {
+                    @Override
+                    protected Collection<Long> genTickets(Integer ticketNums) {
+                        return tickets;
+                    }
+                }
+        );
         startGetTicket(cyclicBarrier, countDownLatch, testTicketBox, results);
         startGetTicket(cyclicBarrier, countDownLatch, testTicketBox, results);
         startGetTicket(cyclicBarrier, countDownLatch, testTicketBox, results);
         countDownLatch.await();
-        List<Integer> tickets = testTicketBox.tickets;
 
-        assertEquals(tickets.size(), results.size());
+        assertEquals(tickets_count, results.size());
 
-        assertArrayEquals(tickets.toArray(), results.toArray(), () -> "expected: " + tickets + ". but actual: " + results);
+        assertTrue(results.containsAll(tickets));
     }
 
-    private void startGetTicket(CyclicBarrier cyclicBarrier, CountDownLatch countDownLatch, TestTicketBox testTicketBox, Set<Integer> results) {
+    private void startGetTicket(CyclicBarrier cyclicBarrier, CountDownLatch countDownLatch, TicketBox<Long> testTicketBox, Set<Long> results) {
         new ParallelThread(cyclicBarrier, countDownLatch, () -> {
             try{
                 while (testTicketBox.hasNext()) {
@@ -46,22 +58,20 @@ class TicketBoxTest {
 
     @Test
     public void should_throw_exception_when_no_more_element(){
-        TestTicketBox testTicketBox = new TestTicketBox();
-        for (int i = 0; i < testTicketBox.tickets.size(); i++) {
+        TicketBox<Long> testTicketBox = new TicketBox<>(
+                new TicketSegment<>(new SegmentID("test_ticket"), 1000, "test", TicketEnum.AUTO_INCREMENT) {
+                    @Override
+                    protected Collection<Long> genTickets(Integer ticketNums) {
+                        return Arrays.asList(1L,2L,3L);
+                    }
+                }
+        );
+
+
+        while (testTicketBox.hasNext()) {
             testTicketBox.next();
         }
 
-        assertFalse(testTicketBox.hasNext());
         assertThrows(NoSuchElementException.class, testTicketBox::next);
-    }
-
-    static class TestTicketBox extends TicketBox<Integer> {
-
-        private final List<Integer> tickets = Arrays.asList(1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20);
-
-        @Override
-        protected Collection<Integer> genTickets(Integer ticketNums) {
-            return tickets;
-        }
     }
 }
