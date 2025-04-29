@@ -14,10 +14,7 @@ spring:
     hibernate:
       ddl-auto: create
     mapping-resources:
-      - META-INF/orm/directory/TreeNode.orm.xml
-      - META-INF/orm/ticket/TicketSegment.orm.xml
-      - META-INF/orm/draft/Version.orm.xml
-      - META-INF/orm/draft/Draft.orm.xml
-      - META-INF/orm/draft/Template.orm.xml
-      - META-INF/orm/resource/Resource.orm.xml
-      - META-INF/orm/resource/File.orm.xml
+      - META-INF/orm/directory.orm.xml
+      - META-INF/orm/draft.orm.xml
+      - META-INF/orm/resource.orm.xml
+      - META-INF/orm/ticket.orm.xml
