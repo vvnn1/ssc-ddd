@@ -19,3 +19,5 @@ include("ssc-ddd:domain:directory")
 findProject(":ssc-ddd:domain:directory")?.name = "directory"
 include("ssc-ddd:domain:draft")
 findProject(":ssc-ddd:domain:draft")?.name = "draft"
+include("ssc-ddd:domain:resource")
+findProject(":ssc-ddd:domain:resource")?.name = "resource"

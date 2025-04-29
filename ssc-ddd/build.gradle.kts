@@ -24,6 +24,7 @@ dependencies {
     implementation(project(":ssc-ddd:domain:directory"))
     implementation(project(":ssc-ddd:domain:ticket"))
     implementation(project(":ssc-ddd:domain:draft"))
+    implementation(project(":ssc-ddd:domain:resource"))
     compileOnly("org.projectlombok:lombok:1.18.22")
     annotationProcessor("org.projectlombok:lombok:1.18.22")
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")

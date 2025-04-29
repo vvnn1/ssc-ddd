@@ -19,3 +19,5 @@ spring:
       - META-INF/orm/draft/Version.orm.xml
       - META-INF/orm/draft/Draft.orm.xml
       - META-INF/orm/draft/Template.orm.xml
+      - META-INF/orm/resource/Resource.orm.xml
+      - META-INF/orm/resource/File.orm.xml
