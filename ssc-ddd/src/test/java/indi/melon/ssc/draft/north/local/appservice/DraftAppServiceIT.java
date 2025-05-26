@@ -148,7 +148,7 @@ public class DraftAppServiceIT {
         assertEquals(DraftType.SQL, draft.getType());
         assertEquals("creator", draft.getCreator());
         assertEquals("creator", draft.getModifier());
-        assertEquals(new EngineID("testEngineId"), draft.getConfiguration().getEngineId());
+        assertEquals(new EngineID("testEngineId"), draft.getConfiguration().currentEngineId());
 
 
         verify(draftFileTreeClient).create(
@@ -189,8 +189,8 @@ public class DraftAppServiceIT {
         assertEquals(DraftCatalog.STREAM, draft.getCatalog());
         assertEquals(DraftType.SQL, draft.getType());
 
-        assertEquals(new EngineID("testEngine11"), draft.getConfiguration().getEngineId());
-        assertTrue(draft.getConfiguration().getAttachmentIdCollection().contains(new AttachmentID("AttachmentID222")));
+        assertEquals(new EngineID("testEngine11"), draft.getConfiguration().currentEngineId());
+        assertTrue(draft.getConfiguration().currentAttachmentIds().contains(new AttachmentID("AttachmentID222")));
 
         verify(draftFileTreeClient).create(
                 "parentId",

@@ -19,8 +19,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
  * @author vvnn1
  * @since 2024/10/29 21:58
  */
-@Import(DraftFactoryTestIT.MockConfiguration.class)
-public class DraftFactoryTestIT extends SscBaseTest {
+@Import(DraftFactoryIT.MockConfiguration.class)
+public class DraftFactoryIT extends SscBaseTest {
     @Autowired
     private DraftFactory draftFactory;
 

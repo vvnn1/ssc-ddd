@@ -1,6 +1,5 @@
-package indi.melon.ssc.draft.domain.configuration;
+package indi.melon.ssc.draft.domain.draft;
 
-import indi.melon.ssc.draft.domain.draft.AttachmentID;
 import jakarta.persistence.AttributeConverter;
 
 import java.util.*;

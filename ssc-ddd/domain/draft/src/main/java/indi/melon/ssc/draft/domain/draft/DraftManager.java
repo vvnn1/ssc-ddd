@@ -32,7 +32,7 @@ public class DraftManager {
                 creator
         );
 
-        draft.assignConfiguration(fromDraft.getConfiguration());
+        draft.assignConfiguration(fromDraft);
         return draft;
     }
 }

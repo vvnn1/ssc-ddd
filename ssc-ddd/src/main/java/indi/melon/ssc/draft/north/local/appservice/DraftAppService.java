@@ -4,7 +4,6 @@ import indi.melon.ssc.common.exception.ApplicationDomainException;
 import indi.melon.ssc.common.exception.ApplicationValidationException;
 import indi.melon.ssc.domain.common.cqrs.DomainException;
 import indi.melon.ssc.draft.domain.draft.*;
-import indi.melon.ssc.draft.domain.exception.DraftException;
 import indi.melon.ssc.draft.domain.south.client.DraftFileTreeClient;
 import indi.melon.ssc.draft.domain.south.repository.DraftRepository;
 import indi.melon.ssc.draft.domain.south.repository.TemplateRepository;
@@ -15,6 +14,9 @@ import indi.melon.ssc.draft.domain.version.Version;
 import indi.melon.ssc.draft.domain.version.VersionID;
 import indi.melon.ssc.draft.north.local.message.*;
 import org.springframework.stereotype.Service;
+
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * @author vvnn1
@@ -42,6 +44,7 @@ public class DraftAppService {
 
     /**
      * 从模板创建草稿
+     *
      * @param command 创建命令
      */
     public Draft create(CreateDraftCommand command) {
@@ -68,13 +71,14 @@ public class DraftAppService {
             );
 
             return draft;
-        } catch (DomainException e){
+        } catch (DomainException e) {
             throw new ApplicationDomainException("create draft failed. command: " + command, e);
         }
     }
 
     /**
      * 另存为模板
+     *
      * @param command 另存为命令
      */
     public Draft saveAs(SaveDraftAsCommand command) {
@@ -101,13 +105,14 @@ public class DraftAppService {
             );
 
             return draft;
-        } catch (DomainException e){
+        } catch (DomainException e) {
             throw new ApplicationDomainException("copy draft failed. command: " + command, e);
         }
     }
 
     /**
      * 保存草稿
+     *
      * @param command 保存命令
      */
     public void save(SaveDraftCommand command) {
@@ -128,6 +133,7 @@ public class DraftAppService {
 
     /**
      * 草稿回滚指定版本
+     *
      * @param command 回滚命令
      */
     public void rollback(RollbackDraftCommand command) {
@@ -148,14 +154,14 @@ public class DraftAppService {
 
         try {
             draft.rollback(version, command.modifier());
-        } catch (DomainException e){
+        } catch (DomainException e) {
             throw new ApplicationDomainException("rollback draft failed. command: " + command, e);
         }
-        draftRepository.save(draft);
     }
 
     /**
      * 重命名草稿
+     *
      * @param command 重命名命令
      */
     public void rename(RenameDraftCommand command) {
@@ -163,7 +169,7 @@ public class DraftAppService {
                 new DraftID(command.draftId())
         );
         if (draft == null) {
-            throw new DraftException("draft not found by id: " + command.draftId());
+            throw new ApplicationValidationException("draft not found by id: " + command.draftId());
         }
 
         try {
@@ -171,10 +177,43 @@ public class DraftAppService {
                     command.newName(),
                     command.modifier()
             );
-        } catch (DomainException e){
+        } catch (DomainException e) {
             throw new ApplicationDomainException("rename draft failed. command: " + command, e);
         }
 
         draftRepository.save(draft);
+    }
+
+    /**
+     * 变成草稿配置信息
+     *
+     * @param command
+     */
+    public void changeConfiguration(ChangeConfigurationCommand command) {
+        Draft draft = draftRepository.draftOf(
+                new DraftID(command.draftId())
+        );
+
+        if (draft == null) {
+            throw new ApplicationValidationException("draft not found by id: " + command.draftId());
+        }
+
+        Set<AttachmentID> attachmentIDSet = command.resourceIds()
+                .stream()
+                .map(AttachmentID::new)
+                .collect(Collectors.toSet());
+
+        try {
+            draft.assignConfiguration(
+                    new Configuration(
+                            new EngineID(
+                                    command.engineId()
+                            ),
+                            attachmentIDSet
+                    )
+            );
+        } catch (DomainException e) {
+            throw new ApplicationDomainException("change draft's configuration failed. draftId:" + command.draftId(), e);
+        }
     }
 }

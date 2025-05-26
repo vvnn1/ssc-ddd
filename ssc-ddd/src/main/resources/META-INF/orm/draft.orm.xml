@@ -23,10 +23,10 @@
                 <attribute-override name="engineId">
                     <column name="engineId"/>
                 </attribute-override>
-                <attribute-override name="attachmentIdCollection">
-                    <column name="attachmentIdCollection"/>
+                <attribute-override name="attachmentIdSet">
+                    <column name="attachmentIdSet"/>
                 </attribute-override>
-                <convert attribute-name="attachmentIdCollection" converter="indi.melon.ssc.draft.domain.configuration.AttachmentIDSetConverter">
+                <convert attribute-name="attachmentIdSet" converter="indi.melon.ssc.draft.domain.draft.AttachmentIDSetConverter">
                 </convert>
             </embedded>
         </attributes>

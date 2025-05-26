@@ -14,8 +14,7 @@ public class DraftBuildUtil {
                 DraftType.SQL,
                 "creator11"
         );
-        draft.setContent("aaa");
-        draft.setModifier("modifier11");
+        draft.editContent("aaa", "modifier11");
         return draft;
     }
 }

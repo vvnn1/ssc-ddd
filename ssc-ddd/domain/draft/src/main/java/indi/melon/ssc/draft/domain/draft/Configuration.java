@@ -2,14 +2,12 @@ package indi.melon.ssc.draft.domain.draft;
 
 import indi.melon.ssc.domain.common.cqrs.AbstractAggregateRoot;
 import jakarta.annotation.Nonnull;
-import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * @author vvnn1
@@ -20,15 +18,15 @@ import java.util.stream.Collectors;
 @ToString
 public final class Configuration extends AbstractAggregateRoot {
     final EngineID engineId;
-    final Set<AttachmentID> attachmentIdCollection;
+    final Set<AttachmentID> attachmentIdSet;
     public Configuration() {
         this.engineId = null;
-        this.attachmentIdCollection = Collections.emptySet();
+        this.attachmentIdSet = Collections.emptySet();
     }
 
-    private Configuration(EngineID engineId, Set<AttachmentID> attachmentIdCollection) {
+    public Configuration(EngineID engineId, @Nonnull Collection<AttachmentID> attachmentIdCollection) {
         this.engineId = engineId;
-        this.attachmentIdCollection = attachmentIdCollection;
+        this.attachmentIdSet = new HashSet<>(attachmentIdCollection);
     }
 
     public Configuration assignAttachments(@Nonnull Collection<AttachmentID> assignedAttachmentIDCollection) {
@@ -41,18 +39,16 @@ public final class Configuration extends AbstractAggregateRoot {
     public Configuration assignEngine(EngineID assignedEngineID){
         return new Configuration(
                 assignedEngineID,
-                new HashSet<>(attachmentIdCollection)
+                new HashSet<>(attachmentIdSet)
         );
     }
 
-    public Collection<AttachmentID> getAttachmentIdCollection() {
-        return Collections.unmodifiableCollection(attachmentIdCollection);
+    public EngineID currentEngineId() {
+        return engineId;
     }
 
-    public Collection<AttachmentID> attachmentsNotIn(Configuration configuration){
-        return attachmentIdCollection.stream()
-                .filter(id -> !configuration.attachmentIdCollection.contains(id))
-                .collect(Collectors.toSet());
+    public Collection<AttachmentID> currentAttachmentIds() {
+        return Collections.unmodifiableCollection(attachmentIdSet);
     }
 
     @Override
@@ -60,11 +56,11 @@ public final class Configuration extends AbstractAggregateRoot {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Configuration that = (Configuration) o;
-        return Objects.equals(engineId, that.engineId) && Objects.equals(attachmentIdCollection, that.attachmentIdCollection);
+        return Objects.equals(engineId, that.engineId) && Objects.equals(attachmentIdSet, that.attachmentIdSet);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(engineId, attachmentIdCollection);
+        return Objects.hash(engineId, attachmentIdSet);
     }
 }

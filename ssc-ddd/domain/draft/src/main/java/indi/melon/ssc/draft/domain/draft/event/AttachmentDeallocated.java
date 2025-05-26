@@ -1,6 +1,8 @@
-package indi.melon.ssc.draft.domain.configuration.event;
+package indi.melon.ssc.draft.domain.draft.event;
 
 import indi.melon.ssc.domain.common.cqrs.AbstractDomainEvent;
+import indi.melon.ssc.draft.domain.draft.AttachmentID;
+import indi.melon.ssc.draft.domain.draft.DraftID;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 
@@ -12,10 +14,10 @@ import lombok.Getter;
 @Getter
 @EqualsAndHashCode(callSuper = false)
 public class AttachmentDeallocated extends AbstractDomainEvent {
-    private final String draftId;
-    private final String attachmentId;
+    private final DraftID draftId;
+    private final AttachmentID attachmentId;
 
-    public AttachmentDeallocated(String draftId, String attachmentId) {
+    public AttachmentDeallocated(DraftID draftId, AttachmentID attachmentId) {
         this.draftId = draftId;
         this.attachmentId = attachmentId;
     }

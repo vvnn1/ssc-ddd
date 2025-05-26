@@ -1,17 +1,15 @@
 package indi.melon.ssc.draft.domain.draft;
 
 import indi.melon.ssc.domain.common.cqrs.AbstractAggregateRoot;
-import indi.melon.ssc.draft.domain.configuration.event.AttachmentAllocated;
-import indi.melon.ssc.draft.domain.configuration.event.AttachmentDeallocated;
-import indi.melon.ssc.draft.domain.configuration.event.EngineAllocated;
-import indi.melon.ssc.draft.domain.configuration.event.EngineDeallocated;
+import indi.melon.ssc.draft.domain.draft.event.AttachmentAllocated;
+import indi.melon.ssc.draft.domain.draft.event.AttachmentDeallocated;
+import indi.melon.ssc.draft.domain.draft.event.EngineAllocated;
+import indi.melon.ssc.draft.domain.draft.event.EngineDeallocated;
 import indi.melon.ssc.draft.domain.exception.NotMatchException;
 import indi.melon.ssc.draft.domain.template.Template;
 import indi.melon.ssc.draft.domain.version.Version;
 import jakarta.annotation.Nonnull;
-import lombok.AccessLevel;
 import lombok.Getter;
-import lombok.Setter;
 import lombok.ToString;
 
 import java.time.LocalDateTime;
@@ -22,7 +20,6 @@ import java.util.*;
  * @since 2024/10/1 23:00
  */
 @Getter
-@Setter(AccessLevel.PACKAGE)
 @ToString
 public class Draft extends AbstractAggregateRoot {
     private DraftID id;
@@ -104,25 +101,25 @@ public class Draft extends AbstractAggregateRoot {
                 type,
                 modifier
         );
-        draft.assignEngine(configuration.engineId);
+        draft.assignEngine(configuration.currentEngineId());
         draft.assignAttachments(Collections.emptyList());
         return draft;
     }
 
     public void assignEngine(EngineID engineId) {
-        EngineID preEngineId = configuration.engineId;
-        configuration = configuration.assignEngine(engineId);
-        engineId = configuration.engineId;
-
-        if (preEngineId == engineId) {
+        if (Objects.equals(configuration.currentEngineId(), engineId)) {
             return;
         }
+
+        EngineID preEngineId = configuration.currentEngineId();
+        configuration = configuration.assignEngine(engineId);
+        engineId = configuration.currentEngineId();
 
         if (preEngineId != null) {
             addEvent(
                     new EngineDeallocated(
-                            id.value,
-                            preEngineId.value
+                            id,
+                            preEngineId
                     )
             );
         }
@@ -130,39 +127,38 @@ public class Draft extends AbstractAggregateRoot {
         if (engineId != null) {
             addEvent(
                     new EngineAllocated(
-                            id.value,
-                            engineId.value
+                            id,
+                            engineId
                     )
             );
         }
     }
 
-    public void assignConfiguration(Configuration configuration) {
-        if (configuration.engineId != null) {
-            assignEngine(configuration.engineId);
-        }
+    public void assignConfiguration(Draft fromDraft) {
+        assignConfiguration(fromDraft.configuration);
+    }
 
-        if (configuration.attachmentIdCollection != null && !configuration.attachmentIdCollection.isEmpty()) {
-            assignAttachments(configuration.attachmentIdCollection);
-        }
+    public void assignConfiguration(Configuration configuration) {
+        assignEngine(configuration.currentEngineId());
+        assignAttachments(configuration.currentAttachmentIds());
     }
 
     public void assignAttachments(@Nonnull Collection<AttachmentID> attachmentIds) {
-        Collection<AttachmentID> preAttachmentIds = configuration.getAttachmentIdCollection();
+        Collection<AttachmentID> preAttachmentIds = configuration.currentAttachmentIds();
         configuration = configuration.assignAttachments(attachmentIds);
-        attachmentIds = configuration.getAttachmentIdCollection();
+        attachmentIds = configuration.currentAttachmentIds();
 
         Set<AttachmentID> removedIds = new HashSet<>(preAttachmentIds);
         Set<AttachmentID> assignedIds = new HashSet<>(attachmentIds);
 
         removedIds.removeAll(assignedIds);
-        assignedIds.removeAll(removedIds);
+        assignedIds.removeAll(preAttachmentIds);
 
         for (AttachmentID removedId : removedIds) {
             addEvent(
                     new AttachmentDeallocated(
-                            id.value,
-                            removedId.value
+                            id,
+                            removedId
                     )
             );
         }
@@ -170,8 +166,8 @@ public class Draft extends AbstractAggregateRoot {
         for (AttachmentID assignedId : assignedIds) {
             addEvent(
                     new AttachmentAllocated(
-                            id.value,
-                            assignedId.value
+                            id,
+                            assignedId
                     )
             );
         }

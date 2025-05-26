@@ -1,6 +1,5 @@
 package indi.melon.ssc.draft.domain.south.client;
 
-import indi.melon.ssc.draft.domain.draft.Directory;
 import indi.melon.ssc.draft.domain.draft.Draft;
 
 /**

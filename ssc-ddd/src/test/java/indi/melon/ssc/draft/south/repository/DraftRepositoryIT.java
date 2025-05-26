@@ -7,13 +7,17 @@ import indi.melon.ssc.draft.south.repository.dao.DraftDao;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.FilterType;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
+
 import static indi.melon.ssc.draft.domain.draft.DraftBuildUtil.buildDraft;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * @author wangmenglong
@@ -30,20 +34,24 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 public class DraftRepositoryIT {
     @Autowired
     private DraftRepository draftRepository;
+    @Autowired
+    private TestEntityManager entityManager;
 
     @Test
     public void should_save_and_get_same_draft(){
+        LocalDateTime beforeCreateTime = LocalDateTime.now();
         Draft draft = buildDraft();
+        LocalDateTime afterCreateTime = LocalDateTime.now();
+
         draftRepository.save(draft);
 
-        Draft draftDB = draftRepository.draftOf(new DraftID("DraftID1"));
+        Draft draftDB = entityManager.find(Draft.class, new DraftID("DraftID1"));
         assertEquals(draft.getId(), draftDB.getId());
         assertEquals(draft.getCatalog(), draftDB.getCatalog());
         assertEquals(draft.getName(), draftDB.getName());
         assertEquals(draft.getContent(), draftDB.getContent());
         assertEquals(draft.getCreator(), draftDB.getCreator());
         assertEquals(draft.getModifier(), draftDB.getModifier());
-//        assertEquals(draft.getCreateTime(), draftDB.getCreateTime());
-//        assertEquals(draft.getUpdateTime(), draftDB.getUpdateTime());
+        assertTrue(beforeCreateTime.isBefore(draft.getCreateTime()) && afterCreateTime.isAfter(draft.getCreateTime()));
     }
 }
