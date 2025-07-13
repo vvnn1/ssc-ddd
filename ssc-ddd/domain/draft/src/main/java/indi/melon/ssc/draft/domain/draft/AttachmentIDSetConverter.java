@@ -10,6 +10,7 @@ import java.util.stream.Collectors;
  * @since 2024/10/22 10:24
  */
 public class AttachmentIDSetConverter implements AttributeConverter<Set<AttachmentID>, String> {
+    private final String DELIMITER_CHARACTER = "#";
 
     @Override
     public String convertToDatabaseColumn(Set<AttachmentID> attribute) {
@@ -18,8 +19,8 @@ public class AttachmentIDSetConverter implements AttributeConverter<Set<Attachme
         }
 
         return attribute.stream()
-                .map(AttachmentID::getValue)
-                .collect(Collectors.joining(","));
+                .map(AttachmentID::toString)
+                .collect(Collectors.joining(DELIMITER_CHARACTER));
     }
 
     @Override
@@ -28,7 +29,7 @@ public class AttachmentIDSetConverter implements AttributeConverter<Set<Attachme
             return new HashSet<>();
         }
 
-        return Arrays.stream(dbData.split(","))
+        return Arrays.stream(dbData.split(DELIMITER_CHARACTER))
                 .map(AttachmentID::new)
                 .collect(Collectors.toSet());
     }

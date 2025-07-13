@@ -126,7 +126,7 @@ public class DraftAppServiceIT {
         ));
 
 
-        String draftId = draftAppService.create(
+        DraftID draftId = draftAppService.create(
                 new CreateDraftCommand(
                         "testDraft",
                         "1",
@@ -134,9 +134,9 @@ public class DraftAppServiceIT {
                         "creator",
                         "testDirId"
                 )
-        ).getId().getValue();
+        ).getId();
 
-        assertEquals("DRAFT_PREFIX_testDraft", draftId);
+        assertEquals(new DraftID("DRAFT_PREFIX_testDraft"), draftId);
 
 
         Draft draft = draftRepository.draftOf(new DraftID("DRAFT_PREFIX_testDraft"));
@@ -169,18 +169,18 @@ public class DraftAppServiceIT {
                 )
         ));
 
-        String draftId = draftAppService.saveAs(
+        DraftID draftId = draftAppService.saveAs(
                 new SaveDraftAsCommand(
                         "testDraft",
                         "draftId_1",
                         "parentId",
                         "vvnn1"
                 )
-        ).getId().getValue();
+        ).getId();
 
-        assertEquals("DRAFT_PREFIX_copy_testDraft", draftId);
+        assertEquals(new DraftID("DRAFT_PREFIX_copy_testDraft"), draftId);
 
-        Draft draft = draftRepository.draftOf(new DraftID(draftId));
+        Draft draft = draftRepository.draftOf(draftId);
         assertNotNull(draft);
         assertEquals(new DraftID("DRAFT_PREFIX_copy_testDraft"), draft.getId());
         assertEquals("testDraft", draft.getName());
