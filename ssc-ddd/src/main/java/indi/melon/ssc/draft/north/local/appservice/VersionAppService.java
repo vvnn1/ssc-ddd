@@ -38,7 +38,6 @@ public class VersionAppService {
         }
 
         version.lock();
-        versionRepository.save(version);
     }
 
     /**
@@ -55,7 +54,6 @@ public class VersionAppService {
         }
 
         version.unlock();
-        versionRepository.save(version);
     }
 
     /**

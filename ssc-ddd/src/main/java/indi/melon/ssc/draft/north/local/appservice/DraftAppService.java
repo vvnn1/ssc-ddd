@@ -180,8 +180,6 @@ public class DraftAppService {
         } catch (DomainException e) {
             throw new ApplicationDomainException("rename draft failed. command: " + command, e);
         }
-
-        draftRepository.save(draft);
     }
 
     /**
