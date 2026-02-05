@@ -20,11 +20,11 @@ repositories {
 }
 
 dependencies {
-    implementation(project(":ssc-ddd:domain:common"))
-    implementation(project(":ssc-ddd:domain:directory"))
-    implementation(project(":ssc-ddd:domain:ticket"))
-    implementation(project(":ssc-ddd:domain:draft"))
-    implementation(project(":ssc-ddd:domain:resource"))
+    implementation(project("domain:common"))
+    implementation(project("domain:directory"))
+    implementation(project("domain:ticket"))
+    implementation(project("domain:draft"))
+    implementation(project("domain:resource"))
     compileOnly("org.projectlombok:lombok:1.18.22")
     annotationProcessor("org.projectlombok:lombok:1.18.22")
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
@@ -40,4 +40,8 @@ dependencies {
 
 tasks.getByName<Test>("test") {
     useJUnitPlatform()
+    dependsOn("domain:directory:test")
+    dependsOn("domain:draft:test")
+    dependsOn("domain:resource:test")
+    dependsOn("domain:ticket:test")
 }
